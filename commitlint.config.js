@@ -1,0 +1,39 @@
+export default {
+  extends: ["@commitlint/config-conventional"],
+  rules: {
+    "type-enum": [
+      2,
+      "always",
+      [
+        "feat",
+        "fix",
+        "refactor",
+        "perf",
+        "test",
+        "docs",
+        "style",
+        "chore",
+        "build",
+        "ci",
+        "revert",
+      ],
+    ],
+    "scope-enum": [
+      2,
+      "always",
+      [
+        "repo",
+        "nvim",
+        "wezterm",
+        "tmux",
+        "clrs",
+        "scripts",
+        "shared",
+        "global",
+      ],
+    ],
+    "scope-empty": [2, "never"],
+    "subject-empty": [2, "never"],
+    "subject-max-length": [2, "always", 100],
+  },
+};

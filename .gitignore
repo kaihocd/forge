@@ -1,0 +1,15 @@
+Thumbs.db
+.DS_Store
+
+node_modules/
+.git/
+
+shada/
+spell/
+*.shada
+
+# vim-pack lock file
+nvim-pack-lock.json
+
+# neovim local storage
+.state.json
