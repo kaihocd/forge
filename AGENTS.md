@@ -84,6 +84,6 @@
 - Husky `pre-commit` runs `pnpm exec lint-staged`; staged JS/JSON/Markdown/YAML
   files are formatted with Prettier and staged Lua files with StyLua.
 - Husky `commit-msg` runs `pnpm exec commitlint --edit "$1"`.
-- Commit messages must use conventional types from `commitlint.config.js` and a
+- Commit messages must use conventional types from `.commitlintrc.json` and a
   non-empty scope. Allowed scopes are `repo`, `nvim`, `wezterm`, `tmux`,
   `clrs`, `scripts`, `shared`, and `global`.
