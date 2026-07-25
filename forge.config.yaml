@@ -1,0 +1,21 @@
+# Forge configuration — the single source of truth for what gets installed.
+#
+# links: repo files symlinked into place as-is (edit in repo, live everywhere).
+# links:
+#   - name: nvim-beta
+#     source: configs/nvim-beta
+#     target: ~/.config/nvim-beta
+#
+# build: templates compiled by a builder and written to the output path.
+# Each task picks a builder by name; opts are builder-specific.
+# The zshrc builder injects opts.aliases at the {{ aliases }} placeholder.
+# build:
+#   - builder: zshrc
+#     source: configs/zsh/zshrc
+#     output: ~/.zshrc
+#     opts:
+#       aliases:
+#         nvim: NVIM_APPNAME=NVIM_APPNAME=nvim-beta nvim
+
+links: []
+build: []
