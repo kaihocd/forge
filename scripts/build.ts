@@ -1,30 +1,36 @@
 import { loadConfig } from "./lib/config.js";
 import { zshrcBuilder } from "./builders/zshrc.js";
+import { errTag, red, skipTag } from "./lib/colors.js";
 import type { Builder } from "./builders/shared.js";
 
 const builders: Record<string, Builder> = {
   zshrc: zshrcBuilder,
 };
 
-const config = await loadConfig();
+try {
+  const config = await loadConfig();
 
-if (config.build.length === 0) {
-  console.log("[skip] no build tasks configured");
-  process.exit(0);
-}
-
-for (const task of config.build) {
-  const builder = builders[task.builder];
-
-  if (!builder) {
-    throw new Error(
-      `[unknown] builder "${task.builder}"; available builders: ${Object.keys(builders).join(", ")}`,
-    );
+  if (config.build.length === 0) {
+    console.log(`${skipTag()} no build tasks configured`);
+    process.exit(0);
   }
 
-  await builder.build({
-    source: task.source,
-    output: task.output,
-    opts: task.opts,
-  });
+  for (const task of config.build) {
+    const builder = builders[task.builder];
+
+    if (!builder) {
+      throw new Error(
+        `${errTag()} ${red(`unknown builder "${task.builder}"; available builders: ${Object.keys(builders).join(", ")}`)}`,
+      );
+    }
+
+    await builder.build({
+      source: task.source,
+      output: task.output,
+      opts: task.opts,
+    });
+  }
+} catch (error) {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
 }

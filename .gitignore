@@ -1,15 +1,16 @@
+# OS
 Thumbs.db
 .DS_Store
 
+# Dependencies
 node_modules/
-.git/
 
+# Generated
+dist/
+
+# Neovim
 shada/
-spell/
 *.shada
-
-# vim-pack lock file
+spell/
 nvim-pack-lock.json
-
-# neovim local storage
 .state.json

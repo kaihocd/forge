@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { z } from "zod";
 
+import { errTag, red } from "../lib/colors.js";
 import { resolveRepoPath } from "../lib/paths.js";
 import { GENERATED_MARKER, writeGeneratedFile, type Builder } from "./shared.js";
 
@@ -36,7 +37,9 @@ function renderTemplate(
     const value = tokens[token];
 
     if (value === undefined) {
-      throw new Error(`[unknown] ${label}: unknown token {{ ${token} }}`);
+      throw new Error(
+        `${errTag()} ${red(`unknown ${label}: unknown token {{ ${token} }`)}`,
+      );
     }
 
     return value;
@@ -59,7 +62,7 @@ export const zshrcBuilder: Builder = {
         error.code === "ENOENT"
       ) {
         throw new Error(
-          `[missing] zshrc: source does not exist: ${sourcePath}`,
+          `${errTag()} ${red(`missing zshrc: source does not exist: ${sourcePath}`)}`,
         );
       }
 
