@@ -1,9 +1,11 @@
 import { loadConfig } from "./lib/config.js";
+import { zshenvBuilder } from "./builders/zshenv.js";
 import { zshrcBuilder } from "./builders/zshrc.js";
 import { errTag, red, skipTag } from "./lib/colors.js";
 import type { Builder } from "./builders/shared.js";
 
 const builders: Record<string, Builder> = {
+  zshenv: zshenvBuilder,
   zshrc: zshrcBuilder,
 };
 

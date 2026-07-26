@@ -3,6 +3,10 @@
 # brew installs Homebrew taps, formulae, and casks. `pnpm brew` is idempotent:
 # already-installed entries are skipped, missing entries are installed.
 #
+# build compiles templates through explicit builders. Outputs are real files,
+# carry a GENERATED_BY_FORGE marker, and refuse to overwrite unmanaged targets.
+# Relative paths are resolved from the repo root; `~` resolves to the home dir.
+#
 brew:
   taps: []
   formulas:
@@ -12,4 +16,9 @@ brew:
     - font-jetbrains-mono-nerd-font
 
 links: []
-build: []
+build:
+  - builder: zshenv
+    source: ./configs/zsh/.zshenv
+    output: ~/.zshenv
+    opts:
+      zdotdir: ./dist/zsh
