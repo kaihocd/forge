@@ -3,9 +3,16 @@
 # brew installs Homebrew taps, formulae, and casks. `pnpm brew` is idempotent:
 # already-installed entries are skipped, missing entries are installed.
 #
+# links symlinks repo files into place as-is. Use it for config files that do
+# not need template rendering, such as Starship's TOML config.
+#
 # build compiles templates through explicit builders. Outputs are real files,
 # carry a GENERATED_BY_FORGE marker, and refuse to overwrite unmanaged targets.
 # Relative paths are resolved from the repo root; `~` resolves to the home dir.
+#
+# zsh currently uses two build tasks:
+# - zshrc builds the real interactive config into ./dist/zsh/.zshrc.
+# - zshenv writes ~/.zshenv and sets ZDOTDIR to the built zsh config directory.
 #
 brew:
   taps: []
@@ -15,8 +22,18 @@ brew:
     - font-fira-code-nerd-font
     - font-jetbrains-mono-nerd-font
 
-links: []
+links:
+  - name: starship
+    source: ./configs/starship/starship.toml
+    target: ~/.config/starship.toml
+
 build:
+  - builder: zshrc
+    source: ./configs/zsh/.zshrc
+    output: ./dist/zsh/.zshrc
+    opts:
+      aliases: {}
+
   - builder: zshenv
     source: ./configs/zsh/.zshenv
     output: ~/.zshenv
