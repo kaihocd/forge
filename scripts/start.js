@@ -41,6 +41,12 @@ if (!(await hasLocalDependencies())) {
   process.exit(1);
 }
 
+const brewStatus = runPnpmScript("brew");
+
+if (brewStatus !== 0) {
+  process.exit(brewStatus);
+}
+
 const buildStatus = runPnpmScript("build");
 
 if (buildStatus !== 0) {

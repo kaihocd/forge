@@ -1,21 +1,15 @@
-# Forge configuration — the single source of truth for what gets installed.
+# Forge configuration — the single source of truth for local setup.
 #
-# links: repo files symlinked into place as-is (edit in repo, live everywhere).
-# links:
-#   - name: nvim-beta
-#     source: configs/nvim-beta
-#     target: ~/.config/nvim-beta
+# brew installs Homebrew taps, formulae, and casks. `pnpm brew` is idempotent:
+# already-installed entries are skipped, missing entries are installed.
 #
-# build: templates compiled by a builder and written to the output path.
-# Each task picks a builder by name; opts are builder-specific.
-# The zshrc builder injects opts.aliases at the {{ aliases }} placeholder.
-# build:
-#   - builder: zshrc
-#     source: configs/zsh/zshrc
-#     output: ~/.zshrc
-#     opts:
-#       aliases:
-#         nvim: NVIM_APPNAME=NVIM_APPNAME=nvim-beta nvim
+brew:
+  taps: []
+  formulas:
+    - starship
+  casks:
+    - font-fira-code-nerd-font
+    - font-jetbrains-mono-nerd-font
 
 links: []
 build: []

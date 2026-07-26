@@ -21,9 +21,18 @@ const buildTaskSchema = z.object({
   opts: z.record(z.string(), z.unknown()).default({}),
 });
 
+const brewSchema = z
+  .object({
+    taps: z.array(z.string().min(1)).default([]),
+    formulas: z.array(z.string().min(1)).default([]),
+    casks: z.array(z.string().min(1)).default([]),
+  })
+  .default({ taps: [], formulas: [], casks: [] });
+
 const configSchema = z.object({
   links: z.array(linkSchema).default([]),
   build: z.array(buildTaskSchema).default([]),
+  brew: brewSchema,
 });
 
 export type ForgeConfig = z.infer<typeof configSchema>;

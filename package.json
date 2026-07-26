@@ -6,6 +6,7 @@
   "scripts": {
     "prepare": "husky",
     "start": "node scripts/start.js",
+    "brew": "tsx scripts/brew.ts",
     "build": "tsx scripts/build.ts",
     "sync": "tsx scripts/sync.ts",
     "sync:preview": "tsx scripts/sync.ts --preview",
