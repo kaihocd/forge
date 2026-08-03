@@ -24,9 +24,9 @@ brew:
     - ripgrep
     - fd
     - zinit
-    - sshfs-mac
   casks:
     - macfuse
+    - sshfs-mac
     - font-fira-code-nerd-font
     - font-jetbrains-mono-nerd-font
 
