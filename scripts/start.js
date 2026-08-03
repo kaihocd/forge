@@ -2,16 +2,13 @@
 // before "pnpm install" so it can report missing dependencies with a friendly
 // message. Do not convert to TS and do not move it into lib/.
 
-import { access } from "node:fs/promises";
-import path from "node:path";
-import { spawnSync } from "node:child_process";
-import { fileURLToPath } from "node:url";
+import { access } from 'node:fs/promises';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-const repoRoot = path.resolve(
-  path.dirname(fileURLToPath(import.meta.url)),
-  "..",
-);
-const tsxBin = path.join(repoRoot, "node_modules", ".bin", "tsx");
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const tsxBin = path.join(repoRoot, 'node_modules', '.bin', 'tsx');
 
 async function hasLocalDependencies() {
   try {
@@ -23,9 +20,9 @@ async function hasLocalDependencies() {
 }
 
 function runPnpmScript(scriptName) {
-  const result = spawnSync("pnpm", [scriptName], {
+  const result = spawnSync('pnpm', [scriptName], {
     cwd: repoRoot,
-    stdio: "inherit",
+    stdio: 'inherit',
   });
 
   if (result.error) {
@@ -36,21 +33,21 @@ function runPnpmScript(scriptName) {
 }
 
 if (!(await hasLocalDependencies())) {
-  console.error("[missing] local dependencies are not installed");
-  console.error("Run `pnpm install` first, then rerun `pnpm start`.");
+  console.error('[missing] local dependencies are not installed');
+  console.error('Run `pnpm install` first, then rerun `pnpm start`.');
   process.exit(1);
 }
 
-const brewStatus = runPnpmScript("brew");
+const brewStatus = runPnpmScript('brew');
 
 if (brewStatus !== 0) {
   process.exit(brewStatus);
 }
 
-const buildStatus = runPnpmScript("build");
+const buildStatus = runPnpmScript('build');
 
 if (buildStatus !== 0) {
   process.exit(buildStatus);
 }
 
-process.exit(runPnpmScript("sync"));
+process.exit(runPnpmScript('sync'));
