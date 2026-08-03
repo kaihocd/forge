@@ -119,7 +119,7 @@ truncation_symbol = "..."
 
 [git_status]
 format = '([\[$all_status$ahead_behind\]]($style))'
-renamed = "Ʀ"
+renamed = "r"
 ahead = "↑"
 behind = "↓"
 deleted = "✗"
