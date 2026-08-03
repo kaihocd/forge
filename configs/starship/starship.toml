@@ -105,12 +105,12 @@ add_newline = false
 format = '[┌\[](bright-black)[$path](bold blue)[\]](bright-black)[$read_only]($read_only_style)'
 
 [character]
-success_symbol = '[└\[](bright-black)[I](bold green)[\]](bright-black)[ >](bold green)'
-error_symbol = '[└\[](bright-black)[E](bold red)[\]](bright-black)[ >](bold red)'
-vimcmd_symbol = '[└\[](bright-black)[N](bold blue)[\]](bright-black)[ >](bold green)'
-vimcmd_visual_symbol = '[└\[](bright-black)[V](bold yellow)[\]](bright-black)[ >](bold yellow)'
-vimcmd_replace_symbol = '[└\[](bright-black)[R](bold purple)[\]](bright-black)[ >](bold purple)'
-vimcmd_replace_one_symbol = '[└\[](bright-black)[R](bold purple)[\]](bright-black)[ >](bold purple)'
+success_symbol = '[└\[](bright-black)[I](bold green)[\]](bright-black)[ \$](bold green)'
+error_symbol = '[└\[](bright-black)[E](bold red)[\]](bright-black)[ \$](bold red)'
+vimcmd_symbol = '[└\[](bright-black)[N](bold blue)[\]](bright-black)[ \$](bold green)'
+vimcmd_visual_symbol = '[└\[](bright-black)[V](bold yellow)[\]](bright-black)[ \$](bold yellow)'
+vimcmd_replace_symbol = '[└\[](bright-black)[R](bold purple)[\]](bright-black)[ \$](bold purple)'
+vimcmd_replace_one_symbol = '[└\[](bright-black)[R](bold purple)[\]](bright-black)[ \$](bold purple)'
 
 # Git
 [git_branch]
