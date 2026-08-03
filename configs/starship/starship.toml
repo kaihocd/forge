@@ -1,11 +1,108 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
 # Prompt layout
+# The top-level format owns spacing; module formats only render their content.
+format = """
+$directory\
+( $git_branch)\
+( $git_status)\
+( $git_commit)\
+( $aws)\
+( $azure)\
+( $battery)\
+( $buf)\
+( $bun)\
+( $c)\
+( $cmake)\
+( $cobol)\
+( $conda)\
+( $container)\
+( $cpp)\
+( $crystal)\
+( $daml)\
+( $dart)\
+( $deno)\
+( $direnv)\
+( $docker_context)\
+( $dotnet)\
+( $elixir)\
+( $elm)\
+( $erlang)\
+( $fennel)\
+( $fortran)\
+( $fossil_branch)\
+( $fossil_metrics)\
+( $gcloud)\
+( $gleam)\
+( $golang)\
+( $gradle)\
+( $guix_shell)\
+( $haskell)\
+( $haxe)\
+( $helm)\
+( $hg_branch)\
+( $hostname)\
+( $java)\
+( $jobs)\
+( $julia)\
+( $kotlin)\
+( $kubernetes)\
+( $localip)\
+( $lua)\
+( $maven)\
+( $memory_usage)\
+( $meson)\
+( $mise)\
+( $mojo)\
+( $nats)\
+( $netns)\
+( $nim)\
+( $nix_shell)\
+( $nodejs)\
+( $ocaml)\
+( $odin)\
+( $opa)\
+( $openstack)\
+( $os)\
+( $package)\
+( $perl)\
+( $php)\
+( $pijul_channel)\
+( $pixi)\
+( $pulumi)\
+( $purescript)\
+( $python)\
+( $quarto)\
+( $raku)\
+( $red)\
+( $rlang)\
+( $ruby)\
+( $rust)\
+( $scala)\
+( $shell)\
+( $singularity)\
+( $solidity)\
+( $spack)\
+( $status)\
+( $sudo)\
+( $swift)\
+( $terraform)\
+( $time)\
+( $typst)\
+( $username)\
+( $vagrant)\
+( $vcsh)\
+( $vlang)\
+( $xmake)\
+( $zig)\
+( $cmd_duration)\
+$line_break\
+$character"""
 continuation_prompt = "[.](bright-black) "
 add_newline = false
 
 [directory]
-format = '[┌\[](bright-black)[$path](bold blue)[\]](bright-black)[$read_only]($read_only_style) '
+format = '[┌\[](bright-black)[$path](bold blue)[\]](bright-black)[$read_only]($read_only_style)'
 
 [character]
 success_symbol = '[└\[](bright-black)[I](bold green)[\]](bright-black)[ >](bold green)'
@@ -21,6 +118,7 @@ format = '[\[$branch\]]($style)'
 truncation_symbol = "..."
 
 [git_status]
+format = '([\[$all_status$ahead_behind\]]($style))'
 renamed = "Ʀ"
 ahead = "↑"
 behind = "↓"
@@ -28,6 +126,7 @@ deleted = "✗"
 diverged = "↯"
 
 [git_commit]
+format = '[\($hash$tag\)]($style)'
 tag_symbol = " tag "
 
 # Modules (alphabetical)
@@ -64,7 +163,7 @@ format = '[\[$symbol($version)\]]($style)'
 symbol = "cmake "
 
 [cmd_duration]
-format = '[ \[took $duration\]]($style)'
+format = '[\[took $duration\]]($style)'
 
 [cobol]
 format = '[\[$symbol($version)\]]($style)'
@@ -173,7 +272,7 @@ format = '[\[$symbol$branch\]]($style)'
 symbol = "hg "
 
 [hostname]
-format = '[\[$ssh_symbol($hostname)\]]($style) '
+format = '[\[$ssh_symbol($hostname)\]]($style)'
 ssh_symbol = "ssh "
 
 [java]
