@@ -15,10 +15,18 @@
 # - zshenv writes ~/.zshenv and sets ZDOTDIR to the built zsh config directory.
 #
 brew:
-  taps: []
+  taps:
+    - gromgit/fuse
   formulas:
     - starship
+    - bat
+    - fzf
+    - ripgrep
+    - fd
+    - zinit
+    - sshfs-mac
   casks:
+    - macfuse
     - font-fira-code-nerd-font
     - font-jetbrains-mono-nerd-font
 

@@ -29,6 +29,19 @@ function isTapped(tap: string) {
   return result.stdout.toString("utf8").split("\n").includes(tap);
 }
 
+function isTrusted(tap: string) {
+  const result = runBrew(["trust", "--json=v1"], "pipe");
+
+  if (result.status !== 0) {
+    throw new Error(`${errTag()} ${red("brew trust: failed to list trusted taps")}`);
+  }
+
+  const trusted = JSON.parse(result.stdout.toString("utf8")) as {
+    taps?: unknown;
+  };
+  return Array.isArray(trusted.taps) && trusted.taps.includes(tap);
+}
+
 function isInstalled(kind: "formula" | "cask", name: string) {
   const result = runBrew(["list", `--${kind}`, name], "pipe");
   return result.status === 0;
@@ -60,21 +73,17 @@ try {
   for (const tap of taps) {
     if (isTapped(tap)) {
       console.log(`${skipTag()} tap ${tap}: already tapped`);
-      continue;
+    } else {
+      console.log(`${okTag()} tap ${tap}: installing`);
+      install(["tap", tap], `tap ${tap}`);
     }
 
-    console.log(`${okTag()} tap ${tap}: installing`);
-    install(["tap", tap], `tap ${tap}`);
-  }
-
-  for (const formula of formulas) {
-    if (isInstalled("formula", formula)) {
-      console.log(`${skipTag()} brew ${formula}: already installed`);
-      continue;
+    if (isTrusted(tap)) {
+      console.log(`${skipTag()} tap ${tap}: already trusted`);
+    } else {
+      console.log(`${okTag()} tap ${tap}: trusting`);
+      install(["trust", "--tap", tap], `trust ${tap}`);
     }
-
-    console.log(`${okTag()} brew ${formula}: installing`);
-    install(["install", formula], `brew ${formula}`);
   }
 
   for (const cask of casks) {
@@ -85,6 +94,16 @@ try {
 
     console.log(`${okTag()} cask ${cask}: installing`);
     install(["install", "--cask", cask], `cask ${cask}`);
+  }
+
+  for (const formula of formulas) {
+    if (isInstalled("formula", formula)) {
+      console.log(`${skipTag()} brew ${formula}: already installed`);
+      continue;
+    }
+
+    console.log(`${okTag()} brew ${formula}: installing`);
+    install(["install", formula], `brew ${formula}`);
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);
