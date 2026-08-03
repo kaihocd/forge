@@ -49,15 +49,22 @@
 
 - `scripts/build.ts` is a dispatcher: it looks up builders by name in an
   explicit registry and calls them. Adding a builder means adding a file under
-  `scripts/builders/`, registering it in the registry, and giving it its own
-  zod `optsSchema`.
+  `scripts/builders/` and registering it in the registry. Builders with options
+  validate them with their own zod `optsSchema`.
 - Config-level schema only validates base task shape (`builder`/`source`/
   `output`); each builder validates its own `opts`.
 - Built files carry a `GENERATED_BY_FORGE` marker, and `writeGeneratedFile` in
   `scripts/builders/shared.ts` refuses to overwrite targets without it. Never
   remove the marker or bypass this check.
-- Unknown `{{ token }}` placeholders fail loudly; each builder defines its own
-  token set.
+- Unknown `{{ token }}` placeholders fail loudly; each templating builder
+  defines its own token set.
+- The `zshenv` builder may initialize the configured machine-local environment
+  file when missing, but it must never overwrite or delete an existing one.
+- Zsh sources are split into explicitly ordered files under `configs/zsh/`.
+  The `zshrc` builder assembles them into the Forge-owned
+  `dist/zsh/.zshrc`; it must not auto-scan the source directory. Other files
+  under `dist/zsh/`, including history and completion dumps, are Zsh runtime
+  state.
 
 ## Sync Script
 

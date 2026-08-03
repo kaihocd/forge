@@ -37,13 +37,17 @@ links:
 
 build:
   - builder: zshrc
-    source: ./configs/zsh/.zshrc
+    source: ./configs/zsh/zshrc.zsh
     output: ./dist/zsh/.zshrc
     opts:
-      aliases: {}
+      sources:
+        - ./configs/zsh/keybindings.zsh
+        - ./configs/zsh/aliases.zsh
+        - ./configs/zsh/plugins.zsh
 
   - builder: zshenv
-    source: ./configs/zsh/.zshenv
+    source: ./configs/zsh/zshenv.zsh
     output: ~/.zshenv
     opts:
       zdotdir: ./dist/zsh
+      localenv: ~/.local.env.zsh

@@ -1,20 +1,50 @@
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 
-import { errTag, red } from "../lib/colors.js";
+import { errTag, okTag, red, skipTag } from "../lib/colors.js";
 import { expandHome, repoRoot, resolveRepoPath } from "../lib/paths.js";
 import { GENERATED_MARKER, writeGeneratedFile, type Builder } from "./shared.js";
 
 const optsSchema = z.object({
   zdotdir: z.string().min(1),
+  localenv: z.string().min(1),
 });
 
-function resolveZdotdir(input: string) {
+function resolveOutputPath(input: string) {
   const expanded = expandHome(input);
   if (path.isAbsolute(expanded)) return expanded;
 
   return path.resolve(repoRoot, expanded);
+}
+
+function quoteForZsh(input: string) {
+  return `'${input.replaceAll("'", "'\\''")}'`;
+}
+
+async function initializeLocalEnv(target: string) {
+  await mkdir(path.dirname(target), { recursive: true });
+
+  try {
+    await writeFile(
+      target,
+      "# Machine-local environment. Forge initializes this file once and never overwrites it.\n",
+      { encoding: "utf8", flag: "wx", mode: 0o600 },
+    );
+    console.log(`${okTag()} initialize local env: ${target}`);
+  } catch (error) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      error.code === "EEXIST"
+    ) {
+      console.log(`${skipTag()} local env: already exists`);
+      return;
+    }
+
+    throw error;
+  }
 }
 
 function renderTemplate(
@@ -60,11 +90,15 @@ export const zshenvBuilder: Builder = {
 
     const body = renderTemplate(
       template,
-      { zdotdir: resolveZdotdir(parsed.zdotdir) },
+      {
+        zdotdir: resolveOutputPath(parsed.zdotdir),
+        localenv: quoteForZsh(resolveOutputPath(parsed.localenv)),
+      },
       "zshenv",
     );
     const content = `# ${GENERATED_MARKER}. Edit the template in the repo and run \`pnpm build\`.\n\n${body.trimStart()}`;
 
     await writeGeneratedFile("zshenv", output, content);
+    await initializeLocalEnv(resolveOutputPath(parsed.localenv));
   },
 };

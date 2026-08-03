@@ -103,7 +103,7 @@ Forge installs config in three ways, declared in `forge.config.yaml`:
   effect immediately. Example: `configs/starship/starship.toml` ->
   `~/.config/starship.toml`.
 - `build` compiles templates that need transformation, then writes the result
-  directly to its target. Example: `configs/zsh/.zshenv` -> `~/.zshenv`, with
+  directly to its target. Example: `configs/zsh/zshenv.zsh` -> `~/.zshenv`, with
   `ZDOTDIR` resolved at build time.
 
 `build` may write generated files under `dist/`. That directory is gitignored
@@ -118,13 +118,23 @@ task declares:
   available)
 - `source`: the input, interpreted by the builder (a template file here)
 - `output`: where the built file lands
-- `opts`: builder-specific data. The `zshenv` builder takes `zdotdir`; the
-  `zshrc` builder takes an `aliases` map and injects it at the `{{ aliases }}`
-  placeholder.
+- `opts`: builder-specific data. The `zshenv` builder takes `zdotdir` and
+  `localenv`; the `zshrc` builder takes an ordered `sources` list and
+  assembles the tracked Zsh sources into the `dist/zsh` runtime directory.
 
 Built files carry a `GENERATED_BY_FORGE` marker. The build refuses to overwrite
 any target that does not contain this marker, so hand-written files are never
 clobbered.
+
+The `zshenv` builder also initializes its configured `localenv` file with mode
+`0600` when it is missing. This machine-local file is loaded by `~/.zshenv` and
+is suitable for proxy settings, SDK paths, and other environment preferences.
+Forge never overwrites or deletes it after creation.
+
+Zsh source is split across `configs/zsh/zshrc.zsh`, `keybindings.zsh`,
+`aliases.zsh`, and `plugins.zsh`; their build order is explicit in
+`forge.config.yaml`. The built `dist/zsh/.zshrc` is Forge-owned; other files in
+`dist/zsh`, such as `.zsh_history` and `.zcompdump`, are Zsh runtime state.
 
 ```sh
 pnpm build
