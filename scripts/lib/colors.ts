@@ -17,5 +17,5 @@ export function skipTag() {
 }
 
 export function errTag() {
-  return paint("\x1b[41m\x1b[37m", " ERR ");
+  return paint("\x1b[41m\x1b[30m", " ERR ");
 }
