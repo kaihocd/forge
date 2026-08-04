@@ -11,8 +11,10 @@ typeset -ga _FORGE_FZF_STYLE=(
   '--marker='
   '--no-multi'
   '--bind=ctrl-j:accept'
+  '--bind=ctrl-d:half-page-down'
+  '--bind=ctrl-u:half-page-up'
   '--info=inline-right'
-  '--no-scrollbar'
+  '--scrollbar=┊┊'
   '--color=bg:-1,bg+:-1,fg:-1,fg+:15:bold'
   '--color=border:8,input-border:8,info:8,gutter:-1'
   '--color=label:12:bold,input-label:12:bold'
@@ -40,11 +42,18 @@ FZF_CTRL_T_OPTS=$(
   _forge_fzf_opts Files \
     '--preview=bat --color=always --style=numbers --line-range=:500 -- {}' \
     '--preview-window=right,60%,border-left,<100(down,50%,border-top)' \
-    '--bind=ctrl-/:toggle-preview'
+    '--bind=ctrl-/:toggle-preview' \
+    '--bind=ctrl-f:preview-half-page-down' \
+    '--bind=ctrl-b:preview-half-page-up'
 )
 
-# History search: Ctrl-R (Ctrl-X permanently deletes the selected event)
-FZF_CTRL_R_OPTS=$(_forge_fzf_opts History)
+# History search: Ctrl-R (Tab selects entries; Ctrl-X permanently deletes them)
+FZF_CTRL_R_OPTS=$(
+  _forge_fzf_opts History \
+    '--multi' \
+    '--marker=* ' \
+    '--bind=enter:clear-multi+accept,ctrl-j:clear-multi+accept'
+)
 
 # Directory search: Ctrl-G
 export _ZO_FZF_OPTS=$(_forge_fzf_opts Directories)
@@ -70,15 +79,22 @@ _forge_history_record_command() {
   REPLY=${record//$'\\\n'/$'\n'}
 }
 
-# Permanently remove one history event.
+# Permanently remove history events in one locked rewrite.
 #
 # The event number identifies the in-memory entry, while the exact command text
 # identifies its newest match in $HISTFILE. The rewrite preserves timestamps,
 # multiline encoding, file permissions, and concurrent Zsh history writes.
-_forge_delete_history_event() {
-  local event=$1 command=$2 lock_fd line record trailing
-  local delete_status=1 remove_at=0
-  local -a records
+_forge_delete_history_events() {
+  local lock_fd line record event command
+  local delete_status=1 remove_at=0 all_found=1 i
+  local -a records retained events commands remove_indices
+
+  (( $# > 0 && $# % 2 == 0 )) || return 1
+  while (( $# > 0 )); do
+    events+=("$1")
+    commands+=("$2")
+    shift 2
+  done
 
   [[ -n "$HISTFILE" && -f "$HISTFILE" ]] || return 1
   zmodload zsh/system || return 1
@@ -90,26 +106,37 @@ _forge_delete_history_event() {
   fi
 
   {
-    # An odd number of trailing backslashes means the next physical line belongs
-    # to the same multiline history event.
+    # Zsh escapes embedded newlines with a trailing backslash. If the command
+    # already has one there, the history file contains two backslashes.
     while IFS= read -r line || [[ -n $line ]]; do
       record+="$line"$'\n'
-      trailing=${line##*[^\\]}
-      (( ${#trailing} % 2 )) && continue
+      [[ $line == *\\ ]] && continue
       records+=("$record")
       record=
     done < "$HISTFILE"
     [[ -n $record ]] && records+=("$record")
 
-    # Event numbers are process-local, so remove the newest exact command match.
-    for (( remove_at = ${#records}; remove_at > 0; remove_at-- )); do
-      _forge_history_record_command "${records[$remove_at]}"
-      [[ $REPLY == $command ]] && break
+    # Event numbers are process-local, so match each command against the newest
+    # remaining exact record. Validate every target before changing the file.
+    for (( i = 1; i <= ${#events}; i++ )); do
+      command=${commands[$i]}
+      for (( remove_at = ${#records}; remove_at > 0; remove_at-- )); do
+        (( ${remove_indices[(Ie)$remove_at]} )) && continue
+        _forge_history_record_command "${records[$remove_at]}"
+        [[ $REPLY == $command ]] && break
+      done
+      if (( remove_at == 0 )); then
+        all_found=0
+        break
+      fi
+      remove_indices+=("$remove_at")
     done
 
-    if (( remove_at > 0 )); then
-      records[$remove_at]=()
-      print -rn -- ${(j::)records} >| "$HISTFILE"
+    if (( all_found )); then
+      for (( i = 1; i <= ${#records}; i++ )); do
+        (( ${remove_indices[(Ie)$i]} )) || retained+=("${records[$i]}")
+      done
+      print -rn -- ${(j::)retained} >| "$HISTFILE"
       delete_status=$?
     fi
   } always {
@@ -118,7 +145,9 @@ _forge_delete_history_event() {
 
   (( delete_status == 0 )) || return 1
 
-  _FORGE_DELETED_HISTORY_EVENTS[$event]=1
+  for event in "${events[@]}"; do
+    _FORGE_DELETED_HISTORY_EVENTS[$event]=1
+  done
 }
 
 _forge_history_candidates() {
@@ -155,7 +184,8 @@ _forge_select_history() {
 }
 
 fzf-history-widget() {
-  local output query key selected event ret
+  local output query key selected line event ret
+  local -a events delete_args
   local -a mbegin mend match
   setopt localoptions extendedglob no_aliases no_glob pipefail
 
@@ -178,22 +208,32 @@ fzf-history-widget() {
       break
     fi
 
-    if [[ $selected == (#b)(<->)(#B)$'\t'* ]]; then
-      event=${match[1]}
-    else
+    events=()
+    for line in "${(@f)selected}"; do
+      if [[ $line == (#b)(<->)(#B)$'\t'* ]]; then
+        events+=("${match[1]}")
+      fi
+    done
+
+    if (( ${#events} == 0 )); then
       LBUFFER=$selected
       break
     fi
 
     if [[ $key == ctrl-x ]]; then
-      if ! _forge_delete_history_event "$event" "${history[$event]}"; then
-        zle -M 'Could not delete history event'
+      delete_args=()
+      for event in "${events[@]}"; do
+        delete_args+=("$event" "${history[$event]}")
+      done
+      if ! _forge_delete_history_events "${delete_args[@]}"; then
+        zle -M 'Could not delete selected history events'
         ret=1
         break
       fi
       continue
     fi
 
+    event=${events[1]}
     BUFFER=${history[$event]}
     CURSOR=${#BUFFER}
     break
