@@ -132,9 +132,10 @@ is suitable for proxy settings, SDK paths, and other environment preferences.
 Forge never overwrites or deletes it after creation.
 
 Zsh source is split across `configs/zsh/zshrc.zsh`, `keybindings.zsh`,
-`aliases.zsh`, and `plugins.zsh`; their build order is explicit in
-`forge.config.yaml`. The built `dist/zsh/.zshrc` is Forge-owned; other files in
-`dist/zsh`, such as `.zsh_history` and `.zcompdump`, are Zsh runtime state.
+`aliases.zsh`, `extra.zsh`, `fzf.zsh`, and `zinit.zsh`; their build order is
+explicit in `forge.config.yaml`. The built `dist/zsh/.zshrc` is Forge-owned;
+other files in `dist/zsh`, such as `.zsh_history` and `.zcompdump`, are Zsh
+runtime state.
 
 ```sh
 pnpm build

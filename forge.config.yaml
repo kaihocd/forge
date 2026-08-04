@@ -16,19 +16,35 @@
 #
 brew:
   taps:
-    - gromgit/fuse
+    # Filesystem extensions
+    - gromgit/fuse # Additional macOS FUSE packages
+
   formulas:
-    - starship
-    - bat
-    - fzf
-    - ripgrep
-    - fd
-    - zinit
+    # Shell experience
+    - starship # Fast, customizable cross-shell prompt
+    - zinit # Zsh plugin manager
+    - zoxide # Smarter cd command with directory ranking
+
+    # CLI productivity
+    - bat # cat alternative with syntax highlighting
+    - fd # Fast, user-friendly find alternative
+    - fzf # Interactive command-line fuzzy finder
+    - ripgrep # Fast recursive text search
+
+    # Development runtimes
+    - nvm # Install and switch between Node.js versions
+
+    # Editors
+    - neovim # Extensible terminal-based text editor
+
   casks:
-    - macfuse
-    - sshfs-mac
-    - font-fira-code-nerd-font
-    - font-jetbrains-mono-nerd-font
+    # Filesystems
+    - macfuse # Filesystem extension framework for macOS
+    - sshfs-mac # Mount remote filesystems over SSH
+
+    # Developer fonts
+    - font-fira-code-nerd-font # Fira Code with icons and extra glyphs
+    - font-jetbrains-mono-nerd-font # JetBrains Mono with icons and extra glyphs
 
 links:
   - name: starship
@@ -41,9 +57,11 @@ build:
     output: ./dist/zsh/.zshrc
     opts:
       sources:
-        - ./configs/zsh/keybindings.zsh
         - ./configs/zsh/aliases.zsh
-        - ./configs/zsh/plugins.zsh
+        - ./configs/zsh/keybindings.zsh
+        - ./configs/zsh/extra.zsh
+        - ./configs/zsh/fzf.zsh
+        - ./configs/zsh/zinit.zsh
 
   - builder: zshenv
     source: ./configs/zsh/zshenv.zsh

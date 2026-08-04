@@ -301,6 +301,8 @@ format = '[\[$localipv4\]]($style)'
 [lua]
 format = '[\[$symbol($version)\]]($style)'
 symbol = "lua "
+version_format = "v${major}.${minor}"
+lua_binary = "luajit"
 
 [maven]
 format = '[\[$symbol($version)\]]($style)'
