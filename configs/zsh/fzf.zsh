@@ -245,12 +245,18 @@ fzf-history-widget() {
 zle -N fzf-history-widget
 
 zoxide-cd-widget() {
-  local dir="$(zoxide query --interactive)"
-  [[ -n "$dir" ]] || return
+  local dir ret
 
-  zle push-line
-  BUFFER="builtin cd -- ${(q)dir:a}"
-  zle accept-line
+  dir="$(zoxide query --interactive)"
+  ret=$?
+
+  if (( ret == 0 )) && [[ -n $dir ]]; then
+    BUFFER="builtin cd -- ${(q)dir:a}"
+    CURSOR=${#BUFFER}
+  fi
+
+  zle reset-prompt
+  return $ret
 }
 zle -N zoxide-cd-widget
 
