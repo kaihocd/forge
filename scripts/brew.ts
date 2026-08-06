@@ -1,49 +1,49 @@
-import { spawnSync } from "node:child_process";
+import { spawnSync } from 'node:child_process';
 
-import { loadConfig } from "./lib/config.js";
-import { errTag, okTag, red, skipTag } from "./lib/colors.js";
+import { loadConfig } from './lib/config.js';
+import { errTag, okTag, red, skipTag } from './lib/colors.js';
 
-function runBrew(args: string[], stdio: "inherit" | "pipe" = "inherit") {
-  return spawnSync("brew", args, { stdio });
+function runBrew(args: string[], stdio: 'inherit' | 'pipe' = 'inherit') {
+  return spawnSync('brew', args, { stdio });
 }
 
 function ensureBrew() {
-  const result = runBrew(["--version"], "pipe");
+  const result = runBrew(['--version'], 'pipe');
 
   if (result.error) {
-    throw new Error(`${errTag()} ${red("missing brew: command not found")}`);
+    throw new Error(`${errTag()} ${red('missing brew: command not found')}`);
   }
 
   if (result.status !== 0) {
-    throw new Error(`${errTag()} ${red("missing brew: failed to run brew")}`);
+    throw new Error(`${errTag()} ${red('missing brew: failed to run brew')}`);
   }
 }
 
 function isTapped(tap: string) {
-  const result = runBrew(["tap"], "pipe");
+  const result = runBrew(['tap'], 'pipe');
 
   if (result.status !== 0) {
-    throw new Error(`${errTag()} ${red("brew tap: failed to list taps")}`);
+    throw new Error(`${errTag()} ${red('brew tap: failed to list taps')}`);
   }
 
-  return result.stdout.toString("utf8").split("\n").includes(tap);
+  return result.stdout.toString('utf8').split('\n').includes(tap);
 }
 
 function isTrusted(tap: string) {
-  const result = runBrew(["trust", "--json=v1"], "pipe");
+  const result = runBrew(['trust', '--json=v1'], 'pipe');
 
   if (result.status !== 0) {
-    throw new Error(`${errTag()} ${red("brew trust: failed to list trusted taps")}`);
+    throw new Error(`${errTag()} ${red('brew trust: failed to list trusted taps')}`);
   }
 
-  const trusted = JSON.parse(result.stdout.toString("utf8")) as {
+  const trusted = JSON.parse(result.stdout.toString('utf8')) as {
     taps?: unknown;
   };
   return Array.isArray(trusted.taps) && trusted.taps.includes(tap);
 }
 
-function isInstalled(kind: "formula" | "cask", name: string) {
-  const result = runBrew(["list", `--${kind}`, name], "pipe");
+function isInstalled(kind: 'formula' | 'cask', name: string) {
+  const result = runBrew(['list', `--${kind}`, name], 'pipe');
   return result.status === 0;
 }
 
@@ -75,35 +75,35 @@ try {
       console.log(`${skipTag()} tap ${tap}: already tapped`);
     } else {
       console.log(`${okTag()} tap ${tap}: installing`);
-      install(["tap", tap], `tap ${tap}`);
+      install(['tap', tap], `tap ${tap}`);
     }
 
     if (isTrusted(tap)) {
       console.log(`${skipTag()} tap ${tap}: already trusted`);
     } else {
       console.log(`${okTag()} tap ${tap}: trusting`);
-      install(["trust", "--tap", tap], `trust ${tap}`);
+      install(['trust', '--tap', tap], `trust ${tap}`);
     }
   }
 
   for (const cask of casks) {
-    if (isInstalled("cask", cask)) {
+    if (isInstalled('cask', cask)) {
       console.log(`${skipTag()} cask ${cask}: already installed`);
       continue;
     }
 
     console.log(`${okTag()} cask ${cask}: installing`);
-    install(["install", "--cask", cask], `cask ${cask}`);
+    install(['install', '--cask', cask], `cask ${cask}`);
   }
 
   for (const formula of formulas) {
-    if (isInstalled("formula", formula)) {
+    if (isInstalled('formula', formula)) {
       console.log(`${skipTag()} brew ${formula}: already installed`);
       continue;
     }
 
     console.log(`${okTag()} brew ${formula}: installing`);
-    install(["install", formula], `brew ${formula}`);
+    install(['install', formula], `brew ${formula}`);
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : error);

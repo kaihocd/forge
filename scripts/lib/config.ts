@@ -1,9 +1,9 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
-import { parse } from "yaml";
-import { z } from "zod";
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+import { parse } from 'yaml';
+import { z } from 'zod';
 
-import { repoRoot } from "./paths.js";
+import { repoRoot } from './paths.js';
 
 const linkSchema = z.object({
   name: z.string().min(1),
@@ -36,12 +36,12 @@ const configSchema = z.object({
 });
 
 export type ForgeConfig = z.infer<typeof configSchema>;
-export type LinkEntry = ForgeConfig["links"][number];
-export type BuildTask = ForgeConfig["build"][number];
+export type LinkEntry = ForgeConfig['links'][number];
+export type BuildTask = ForgeConfig['build'][number];
 
 export async function loadConfig() {
-  const configPath = path.join(repoRoot, "forge.config.yaml");
-  const configFile = await readFile(configPath, "utf8");
+  const configPath = path.join(repoRoot, 'forge.config.yaml');
+  const configFile = await readFile(configPath, 'utf8');
   const parsedConfig = parse(configFile);
 
   return configSchema.parse(parsedConfig);

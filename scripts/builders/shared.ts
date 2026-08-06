@@ -1,12 +1,12 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 
-import { errTag, okTag, red, skipTag } from "../lib/colors.js";
-import { expandHome, repoRoot } from "../lib/paths.js";
+import { errTag, okTag, red, skipTag } from '../lib/colors.js';
+import { expandHome, repoRoot } from '../lib/paths.js';
 
 // The marker is the ownership proof for generated files: writeGeneratedFile
 // refuses to overwrite any target that does not contain it. Never bypass.
-export const GENERATED_MARKER = "GENERATED_BY_FORGE";
+export const GENERATED_MARKER = 'GENERATED_BY_FORGE';
 
 export interface Builder {
   build(task: { source: string; output: string; opts: unknown }): Promise<void>;
@@ -19,25 +19,14 @@ function resolveOutputPath(output: string) {
   return path.resolve(repoRoot, expanded);
 }
 
-export async function writeGeneratedFile(
-  label: string,
-  output: string,
-  content: string,
-) {
+export async function writeGeneratedFile(label: string, output: string, content: string) {
   const target = resolveOutputPath(output);
   let existing: string | null = null;
 
   try {
-    existing = await readFile(target, "utf8");
+    existing = await readFile(target, 'utf8');
   } catch (error) {
-    if (
-      !(
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        error.code === "ENOENT"
-      )
-    ) {
+    if (!(error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT')) {
       throw error;
     }
   }
@@ -56,6 +45,6 @@ export async function writeGeneratedFile(
   }
 
   await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target, content, "utf8");
+  await writeFile(target, content, 'utf8');
   console.log(`${okTag()} build ${label}: ${target}`);
 }

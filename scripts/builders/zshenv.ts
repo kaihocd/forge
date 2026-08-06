@@ -1,10 +1,10 @@
-import { mkdir, readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { z } from "zod";
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import path from 'node:path';
+import { z } from 'zod';
 
-import { errTag, okTag, red, skipTag } from "../lib/colors.js";
-import { expandHome, repoRoot, resolveRepoPath } from "../lib/paths.js";
-import { GENERATED_MARKER, writeGeneratedFile, type Builder } from "./shared.js";
+import { errTag, okTag, red, skipTag } from '../lib/colors.js';
+import { expandHome, repoRoot, resolveRepoPath } from '../lib/paths.js';
+import { GENERATED_MARKER, writeGeneratedFile, type Builder } from './shared.js';
 
 const optsSchema = z.object({
   zdotdir: z.string().min(1),
@@ -28,17 +28,12 @@ async function initializeLocalEnv(target: string) {
   try {
     await writeFile(
       target,
-      "# Machine-local environment. Forge initializes this file once and never overwrites it.\n",
-      { encoding: "utf8", flag: "wx", mode: 0o600 },
+      '# Machine-local environment. Forge initializes this file once and never overwrites it.\n',
+      { encoding: 'utf8', flag: 'wx', mode: 0o600 },
     );
     console.log(`${okTag()} initialize local env: ${target}`);
   } catch (error) {
-    if (
-      error &&
-      typeof error === "object" &&
-      "code" in error &&
-      error.code === "EEXIST"
-    ) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'EEXIST') {
       console.log(`${skipTag()} local env: already exists`);
       return;
     }
@@ -47,18 +42,12 @@ async function initializeLocalEnv(target: string) {
   }
 }
 
-function renderTemplate(
-  template: string,
-  tokens: Record<string, string>,
-  label: string,
-) {
+function renderTemplate(template: string, tokens: Record<string, string>, label: string) {
   return template.replace(/\{\{\s*([\w-]+)\s*\}\}/g, (_, token: string) => {
     const value = tokens[token];
 
     if (value === undefined) {
-      throw new Error(
-        `${errTag()} ${red(`unknown ${label}: unknown token {{ ${token} }`)}`,
-      );
+      throw new Error(`${errTag()} ${red(`unknown ${label}: unknown token {{ ${token} }`)}`);
     }
 
     return value;
@@ -72,14 +61,9 @@ export const zshenvBuilder: Builder = {
     let template: string;
 
     try {
-      template = await readFile(sourcePath, "utf8");
+      template = await readFile(sourcePath, 'utf8');
     } catch (error) {
-      if (
-        error &&
-        typeof error === "object" &&
-        "code" in error &&
-        error.code === "ENOENT"
-      ) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') {
         throw new Error(
           `${errTag()} ${red(`missing zshenv: source does not exist: ${sourcePath}`)}`,
         );
@@ -94,11 +78,11 @@ export const zshenvBuilder: Builder = {
         zdotdir: resolveOutputPath(parsed.zdotdir),
         localenv: quoteForZsh(resolveOutputPath(parsed.localenv)),
       },
-      "zshenv",
+      'zshenv',
     );
     const content = `# ${GENERATED_MARKER}. Edit the template in the repo and run \`pnpm build\`.\n\n${body.trimStart()}`;
 
-    await writeGeneratedFile("zshenv", output, content);
+    await writeGeneratedFile('zshenv', output, content);
     await initializeLocalEnv(resolveOutputPath(parsed.localenv));
   },
 };
