@@ -80,9 +80,9 @@ Run the full local setup:
 pnpm start
 ```
 
-`pnpm start` runs `brew`, `build`, then `sync`. It expects local dependencies to
-already be installed; if `node_modules` is missing, it will ask you to run
-`pnpm install` first.
+`pnpm start` runs `brew`, `build`, then `sync`, stopping at the first failed
+step. Install local dependencies with `pnpm install` before running the
+TypeScript entrypoint.
 
 Run only the Homebrew bootstrap step:
 
@@ -157,7 +157,9 @@ pnpm sync
 
 The linker is intentionally conservative: preview reports conflicts without
 changing anything, apply skips links that are already correct, and apply fails
-on any existing non-Forge target instead of overwriting files.
+on any existing non-Forge target instead of overwriting files. Apply plans and
+validates every configured link before writing, so one conflict cannot leave a
+partially synchronized environment.
 
 ## Planned Areas
 

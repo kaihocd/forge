@@ -19,16 +19,13 @@
 - Commands map 1:1 to entrypoint files (`pnpm sync` -> `scripts/sync.ts`).
 - Shared infrastructure goes in `scripts/lib/` (config loading, path helpers).
 - Domain logic goes in a domain folder (`builders/`, future `doctor/`, etc.).
-- `scripts/start.js` is the only exception: it is `.js` and dependency-free
-  on purpose. See the header comment in that file.
 
 ## Commands
 
 - Use `pnpm install` if dependencies need refresh; the repo pins `pnpm@10.29.3`
   via `packageManager`.
 - Use `pnpm start` for full local setup after dependencies are installed. It
-  runs `brew`, `build`, then `sync`; if dependencies are missing it asks the
-  user to run `pnpm install` first.
+  runs `brew`, `build`, then `sync` and stops at the first failed step.
 - Use `pnpm brew` to install Homebrew taps, formulae, and casks declared under
   `brew:` in `forge.config.yaml`. The command is idempotent and skips already
   installed entries.
@@ -75,6 +72,8 @@
 - The linker is intentionally conservative: already-correct symlinks are
   skipped, conflicting symlinks or real files/directories fail, and nothing is
   overwritten.
+- Sync plans every configured link before writing. If any target conflicts,
+  `pnpm sync` must fail without creating any links from that plan.
 - `pnpm sync:preview` reports conflicts without failing because local machines
   may already have unmanaged dotfiles; `pnpm sync` is the command that must
   fail on conflicts.
