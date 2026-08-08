@@ -1,0 +1,12 @@
+packages:
+  - packages/*
+
+catalog:
+  '@types/node': 26.1.2
+  oxlint: 1.77.0
+  prettier: 3.9.6
+  tsx: 4.23.9
+  typescript: 7.0.2
+  vitest: 4.1.10
+  yaml: 2.9.0
+  zod: 4.4.3
