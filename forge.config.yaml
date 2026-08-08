@@ -6,63 +6,67 @@
 # links symlinks repo files into place as-is. Use it for config files that do
 # not need template rendering, such as Starship's TOML config.
 #
-# build compiles templates through explicit builders. Outputs are real files,
-# carry a GENERATED_BY_FORGE marker, and refuse to overwrite unmanaged targets.
+# build runs explicit builders that generate managed files or create declared
+# runtime links. Generated files carry a GENERATED_BY_FORGE marker; runtime links
+# must be absent or resolve to their declared source.
 # Relative paths are resolved from the repo root; `~` resolves to the home dir.
 #
-# zsh currently uses two build tasks:
-# - zshrc builds the real interactive config into ./dist/zsh/.zshrc.
-# - zshenv writes ~/.zshenv and sets ZDOTDIR to the built zsh config directory.
+# Zsh currently uses two build tasks:
+# - zsh-runtime links the declared CLI and completion artifacts, then assembles
+#   the main template and ordered sources into ./dist/zsh/.zshrc.
+# - zshenv writes ~/.zshenv, points ZDOTDIR at ./dist/zsh, and initializes the
+#   machine-local environment file only when it is missing. The generated
+#   zshenv keeps persistent Zsh data under ~/.forge/zsh.
 #
 brew:
   taps:
     # Filesystem extensions
     - gromgit/fuse # Additional macOS FUSE packages
-
   formulas:
     # Shell experience
     - starship # Fast, customizable cross-shell prompt
     - zinit # Zsh plugin manager
     - zoxide # Smarter cd command with directory ranking
-
     # CLI productivity
     - bat # cat alternative with syntax highlighting
     - fd # Fast, user-friendly find alternative
     - fzf # Interactive command-line fuzzy finder
     - ripgrep # Fast recursive text search
-
     # Development runtimes
     - nvm # Install and switch between Node.js versions
-
     # Editors
     - neovim # Extensible terminal-based text editor
-
   casks:
     # Filesystems
     - macfuse # Filesystem extension framework for macOS
     - sshfs-mac # Mount remote filesystems over SSH
-
     # Developer fonts
     - font-fira-code-nerd-font # Fira Code with icons and extra glyphs
     - font-jetbrains-mono-nerd-font # JetBrains Mono with icons and extra glyphs
-
 links:
   - name: starship
     source: ./configs/starship/starship.toml
     target: ~/.config/starship.toml
-
 build:
-  - builder: zshrc
+  - builder: zsh-runtime
     source: ./configs/zsh/zshrc.zsh
     output: ./dist/zsh/.zshrc
     opts:
+      executables:
+        - name: swatch
+          source: ./packages/swatch/dist/cli.js
+          output: ./dist/bin/swatch
+      completions:
+        - name: swatch completion
+          source: ./packages/swatch/dist/completions/_swatch
+          output: ./dist/completions/_swatch
       sources:
+        - ./configs/zsh/completion.zsh
         - ./configs/zsh/aliases.zsh
         - ./configs/zsh/keybindings.zsh
         - ./configs/zsh/extra.zsh
         - ./configs/zsh/fzf.zsh
         - ./configs/zsh/zinit.zsh
-
   - builder: zshenv
     source: ./configs/zsh/zshenv.zsh
     output: ~/.zshenv

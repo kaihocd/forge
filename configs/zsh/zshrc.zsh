@@ -1,5 +1,5 @@
 # History
-HISTFILE="$ZDOTDIR/.zsh_history"
+HISTFILE="$FORGE_ZSH_DATA_DIR/history"
 HISTSIZE=100000
 SAVEHIST=100000
 
@@ -17,9 +17,15 @@ setopt AUTOCD
 setopt NOBEEP
 setopt NUMERIC_GLOB_SORT
 
-# Completion
-autoload -Uz compinit
-compinit
+# Forge-built command and completion discovery paths.
+typeset -U path fpath
 
-zstyle ':completion:*' menu select
-zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+path=(
+{{ executable_dirs }}
+  $path
+)
+
+fpath=(
+{{ completion_dirs }}
+  $fpath
+)

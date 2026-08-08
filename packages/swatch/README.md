@@ -150,5 +150,8 @@ The package build generates a static Zsh completion at
 from the same validated manifest, so completion does not start Node or access
 the network.
 
-Swatch writes only its current selection under the Forge-owned
-`~/.forge/swatch/` data directory.
+Forge exposes the package-owned CLI and completion under the root `dist/bin/`
+and `dist/completions/` runtime directories. Newly created links use relative
+targets. The generated Zsh configuration adds those build-time-resolved
+directories to `PATH` and `fpath` before `compinit`. Swatch writes only its
+current selection under the Forge-owned `~/.forge/swatch/` data directory.

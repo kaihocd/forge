@@ -5,9 +5,32 @@
 - This repo is an early-stage personal development-environment workspace, not a
   traditional app. Current real content is repo tooling, `forge.config.yaml`,
   TypeScript automation under `scripts/`, and the first zsh and Starship config
-  sources under `configs/`.
-- There is no workspace config, multi-package structure, test script, or CI
-  workflow, and none is planned unless a real need appears.
+  sources under `configs/`, plus workspace packages under `packages/`.
+- The repository root owns environment orchestration, shared development
+  tooling, and workspace-wide command aggregation. Each package owns its domain
+  logic, runtime dependencies, tests, and build outputs.
+- Root package scripts are the repository's public command surface. Keep them
+  limited to repository-wide workflows and Forge-owned domains; do not add root
+  aliases that only forward to one package's domain-specific command.
+- Workspace packages expose the shared `ensure`, `build`, `lint:check`,
+  `lint:fix`, `typecheck`, and `test` scripts when applicable so root aggregation
+  discovers them automatically. `ensure` prepares missing external build inputs
+  without refreshing valid existing input. Package-specific maintenance commands
+  remain in that package and are invoked with
+  `pnpm --filter <package> <command>`.
+- Packages must not install configuration directly into user directories.
+  Installation targets remain explicit in `forge.config.yaml`; do not auto-scan
+  `packages/`. Package-owned persistent runtime state lives under `~/.forge/`.
+- Swatch's built catalog is the sole Theme data source. Its persistent state
+  `~/.forge/swatch/current.json` stores only the selected Theme ID. `current` and
+  `current --json` initialize the catalog default only when that state is
+  missing; `current --path` never creates it, and `use` writes only an explicitly
+  validated selection. Invalid or dangling state must fail and can only be
+  repaired by an explicit valid selection.
+- Workspace packages that produce CLIs are build-first: runtime commands use
+  their complete `dist/` output and must not execute TypeScript sources
+  directly.
+- There is no CI workflow yet. Add one only when a real need appears.
 - `forge.config.yaml` is the single source of truth for `brew`, `links`, and
   `build` tasks. Do not hard-code new targets inside scripts. Config sources
   live under `configs/`.
@@ -31,16 +54,24 @@
   installed entries.
 - Do not use `pnpm setup`; that is pnpm's built-in global setup command, not
   this repo's flow.
-- Use `pnpm build` to compile templates declared under `build:` in
-  `forge.config.yaml`.
+- Use `pnpm ensure` to prepare and validate workspace build prerequisites.
+- Use `pnpm build` to ensure prerequisites, build workspace packages, and then
+  run the builders declared under `build:` in `forge.config.yaml`.
 - Use `pnpm sync:preview` to preview configured symlinks before applying them
   with `pnpm sync`; do not use `pnpm link`, which is pnpm's built-in package
   linking command.
-- Run `pnpm lint` for TypeScript script linting; it is `oxlint scripts` with
-  `.oxlintrc.json` auto-discovered.
-- Run `pnpm typecheck` for TypeScript scripts; it is `tsc --noEmit`.
-- Run `pnpm check` for full non-mutating verification: lint, typecheck, and
-  format-check.
+- Run `pnpm test` to run Forge tests and tests in workspace packages that define
+  a `test` script.
+- Run `pnpm check` for full non-mutating verification: repository-wide linting,
+  type checking, and formatting checks.
+- Run `pnpm fix` to apply safe Oxlint fixes and repository-wide formatting, then
+  run `check`; `fix` cannot repair type errors or non-fixable lint errors.
+- Use `lint:check`, `lint:fix`, `typecheck`, `format:check`, and `format:fix` only
+  when a focused quality step is useful; `check` and `fix` are the default
+  repository-wide entrypoints.
+- Run package-specific commands through their workspace scope, for example
+  `pnpm --filter @forge/swatch schemes:check`; do not add a root forwarding
+  alias for them.
 
 ## Build System
 
@@ -50,18 +81,27 @@
   validate them with their own zod `optsSchema`.
 - Config-level schema only validates base task shape (`builder`/`source`/
   `output`); each builder validates its own `opts`.
-- Built files carry a `GENERATED_BY_FORGE` marker, and `writeGeneratedFile` in
-  `scripts/builders/shared.ts` refuses to overwrite targets without it. Never
-  remove the marker or bypass this check.
+- Forge-generated regular files carry a `GENERATED_BY_FORGE` marker, and
+  `writeGeneratedFile` in `scripts/builders/shared.ts` only replaces regular
+  files that contain it. Never remove the marker or bypass this check.
 - Unknown `{{ token }}` placeholders fail loudly; each templating builder
   defines its own token set.
 - The `zshenv` builder may initialize the configured machine-local environment
   file when missing, but it must never overwrite or delete an existing one.
+- The `zsh-runtime` builder explicitly links package-owned CLI and completion
+  artifacts into root runtime outputs. It derives `PATH` and `fpath` directories
+  from each declared output and writes the final `.zshrc` from explicitly
+  ordered sources; it must not scan workspace packages or assume fixed runtime
+  folders.
+- Newly created runtime links use relative targets. An existing symlink is kept
+  when it resolves to the declared source, even if its stored target is absolute.
+  The generated runtime fragment contains build-time-resolved absolute discovery
+  paths and must be rebuilt after moving the repository.
 - Zsh sources are split into explicitly ordered files under `configs/zsh/`.
-  The `zshrc` builder assembles them into the Forge-owned
-  `dist/zsh/.zshrc`; it must not auto-scan the source directory. Other files
-  under `dist/zsh/`, including history and completion dumps, are Zsh runtime
-  state.
+  The `zsh-runtime` builder assembles them into the Forge-owned
+  `dist/zsh/.zshrc`; it must not auto-scan the source directory. Persistent Zsh
+  data and completion dumps live together under `~/.forge/zsh`, leaving
+  `dist/zsh` disposable.
 
 ## Sync Script
 
@@ -81,18 +121,18 @@
 
 ## Formatting And Hooks
 
-- Prettier covers `**/*.{js,mjs,json,jsonc,md,yaml,yml}`; `pnpm-lock.yaml` is
+- Prettier covers `**/*.{js,mjs,ts,json,jsonc,md,yaml,yml}`; `pnpm-lock.yaml` is
   intentionally ignored by Prettier.
-- StyLua runs over the whole repo with Lua 5.2 syntax, 4-space indentation,
+- StyLua runs over the whole repo with Lua 5.2 syntax, 2-space indentation,
   Unix line endings, and sorted `require`s.
 - `.editorconfig` says Lua and shell files use 2-space indentation, but
   `.stylua.toml` is the executable source for Lua formatting.
 
 ## Commits
 
-- Husky `pre-commit` runs `pnpm exec lint-staged`; staged JS/JSON/Markdown/YAML
-  files are formatted with Prettier and staged Lua files with StyLua.
+- Husky `pre-commit` runs `pnpm exec lint-staged`; staged JS/TS/JSON/Markdown/
+  YAML files are formatted with Prettier and staged Lua files with StyLua.
 - Husky `commit-msg` runs `pnpm exec commitlint --edit "$1"`.
 - Commit messages must use conventional types from `.commitlintrc.json` and a
   non-empty scope. Allowed scopes are `repo`, `nvim`, `wezterm`, `tmux`,
-  `clrs`, `scripts`, `shared`, and `global`.
+  `clrs`, `swatch`, `scripts`, `shared`, and `global`.
