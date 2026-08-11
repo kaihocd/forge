@@ -81,9 +81,9 @@ theme ID list, and the validated `default-dark` default.
 
 The package `sync` script links the built CLI into
 `${XDG_BIN_HOME:-$HOME/.local/bin}`, the Zsh completion into
-`${XDG_DATA_HOME:-$HOME/.local/share}/zsh/site-functions`, and the WezTerm
-adapter below `${XDG_DATA_HOME:-$HOME/.local/share}/swatch`. It plans every
-artifact before writing and refuses unmanaged conflicts.
+`${XDG_DATA_HOME:-$HOME/.local/share}/zsh/site-functions`, and the Kitty and
+WezTerm adapters below `${XDG_DATA_HOME:-$HOME/.local/share}/swatch`. It plans
+every artifact before writing and refuses unmanaged conflicts.
 
 ## CLI Contract
 

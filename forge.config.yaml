@@ -26,6 +26,9 @@ brew:
     - font-jetbrains-mono-nerd-font
 
 modules:
+  - name: kitty
+    type: config
+    manifest: ./configs/kitty/forge.yaml
   - name: starship
     type: config
     manifest: ./configs/starship/forge.yaml

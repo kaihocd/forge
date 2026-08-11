@@ -32,6 +32,10 @@
   They must not duplicate catalog/state validation. Runtime discovery must start
   from the current shell startup files, discard inherited shell-derived paths,
   and never cache discovered paths across consumer configuration reloads.
+- Kitty generates runtime colors from the Swatch integration during config
+  evaluation. A per-process watcher monitors the Swatch selection and Kitty
+  font state, then reloads configuration through Kitty's supported `SIGUSR1`
+  entrypoint without enabling remote control.
 - Workspace packages that produce CLIs are build-first: runtime commands use
   their complete `dist/` output and must not execute TypeScript sources
   directly.
@@ -115,5 +119,5 @@
   YAML files are formatted with Prettier and staged Lua files with StyLua.
 - Husky `commit-msg` runs `pnpm exec commitlint --edit "$1"`.
 - Commit messages must use conventional types from `.commitlintrc.json` and a
-  non-empty scope. Allowed scopes are `repo`, `nvim`, `wezterm`, `tmux`,
+  non-empty scope. Allowed scopes are `repo`, `nvim`, `wezterm`, `kitty`, `tmux`,
   `clrs`, `swatch`, `scripts`, `shared`, and `global`.

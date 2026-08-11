@@ -27,6 +27,8 @@ package.preload.wezterm = function()
         assert_command(command, {
           '/usr/bin/env',
           '-u',
+          'PATH',
+          '-u',
           'ZDOTDIR',
           '-u',
           'NVM_BIN',

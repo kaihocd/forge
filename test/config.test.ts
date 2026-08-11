@@ -1,4 +1,5 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { constants } from 'node:fs';
+import { access, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -12,33 +13,69 @@ afterEach(async () => {
 });
 
 describe('module configuration', () => {
+  it('keeps Kitty generated config executable', async () => {
+    const generatedConfig = path.join(import.meta.dirname, '../configs/kitty/files/dynamic.py');
+    await expect(access(generatedConfig, constants.X_OK)).resolves.toBeUndefined();
+  });
+
   it('loads generic config links in declaration order', async () => {
     const root = await temporaryDirectory();
     await writeManifest(
       root,
+      'configs/kitty/forge.yaml',
+      'sync:\n  - name: main\n    source: ./files\n    target: ~/.config/kitty\n',
+    );
+    await writeManifest(
+      root,
       'configs/wezterm/forge.yaml',
-      'sync:\n  - name: main\n    source: ./main\n    target: ~/.config/wezterm\n',
+      'sync:\n  - name: main\n    source: ./files\n    target: ~/.config/wezterm\n',
     );
     await writeManifest(
       root,
       'configs/zsh/forge.yaml',
-      'sync:\n  - name: config\n    source: .\n    target: ~/.config/zsh\n',
+      'sync:\n  - name: environment\n    source: ./files/zshenv.zsh\n    target: ~/.zshenv\n  - name: interactive\n    source: ./files/zshrc.zsh\n    target: ~/.config/zsh/.zshrc\n  - name: keys\n    source: ./files/keys.zsh\n    target: ~/.config/zsh/keys.zsh\n  - name: tools\n    source: ./files/tools.zsh\n    target: ~/.config/zsh/tools.zsh\n  - name: fzf\n    source: ./files/fzf.zsh\n    target: ~/.config/zsh/fzf.zsh\n',
     );
     await writeConfig(root, [
+      configModule('kitty', './configs/kitty/forge.yaml'),
       configModule('wezterm', './configs/wezterm/forge.yaml'),
       configModule('zsh', './configs/zsh/forge.yaml'),
     ]);
     await expect(loadDomainConfig(root)).resolves.toEqual({
       sync: [
         {
+          name: 'kitty/main',
+          source: path.join(root, 'configs/kitty/files'),
+          target: '~/.config/kitty',
+        },
+        {
           name: 'wezterm/main',
-          source: path.join(root, 'configs/wezterm/main'),
+          source: path.join(root, 'configs/wezterm/files'),
           target: '~/.config/wezterm',
         },
         {
-          name: 'zsh/config',
-          source: path.join(root, 'configs/zsh'),
-          target: '~/.config/zsh',
+          name: 'zsh/environment',
+          source: path.join(root, 'configs/zsh/files/zshenv.zsh'),
+          target: '~/.zshenv',
+        },
+        {
+          name: 'zsh/interactive',
+          source: path.join(root, 'configs/zsh/files/zshrc.zsh'),
+          target: '~/.config/zsh/.zshrc',
+        },
+        {
+          name: 'zsh/keys',
+          source: path.join(root, 'configs/zsh/files/keys.zsh'),
+          target: '~/.config/zsh/keys.zsh',
+        },
+        {
+          name: 'zsh/tools',
+          source: path.join(root, 'configs/zsh/files/tools.zsh'),
+          target: '~/.config/zsh/tools.zsh',
+        },
+        {
+          name: 'zsh/fzf',
+          source: path.join(root, 'configs/zsh/files/fzf.zsh'),
+          target: '~/.config/zsh/fzf.zsh',
         },
       ],
     });

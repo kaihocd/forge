@@ -31,7 +31,23 @@ fpath=(
   $fpath
 )
 
-for zsh_source in completion aliases keymaps extra fzf zinit; do
-  source "$ZDOTDIR/$zsh_source.zsh"
-done
-unset zsh_source zsh_state_dir
+# Completion
+autoload -Uz compinit
+zmodload zsh/complist
+zmodload zsh/terminfo
+typeset zsh_cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+mkdir -p "$zsh_cache_dir"
+compinit -d "$zsh_cache_dir/zcompdump-$ZSH_VERSION"
+unset zsh_cache_dir
+
+zstyle ':completion:*' menu select
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+
+# Aliases
+alias ls='ls -G'
+alias ll='ls -lG'
+
+source "$ZDOTDIR/keys.zsh"
+source "$ZDOTDIR/tools.zsh"
+
+unset zsh_state_dir

@@ -1,4 +1,4 @@
 sync:
   - name: main
     source: ./files
-    target: ~/.config/wezterm
+    target: ~/.config/kitty

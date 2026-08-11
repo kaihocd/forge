@@ -35,6 +35,11 @@ export function createPackageSyncEntries(
       target: path.join(dataHome, 'zsh', 'site-functions', '_swatch'),
     },
     {
+      name: 'swatch/Kitty integration',
+      source: path.join(root, 'dist', 'integrations', 'kitty.py'),
+      target: path.join(dataHome, 'swatch', 'integrations', 'kitty.py'),
+    },
+    {
       name: 'swatch/WezTerm integration',
       source: path.join(root, 'dist', 'integrations', 'wezterm.lua'),
       target: path.join(dataHome, 'swatch', 'integrations', 'wezterm.lua'),

@@ -72,6 +72,8 @@ local function read_interactive_shell_path()
   local environment = execute_child_process({
     '/usr/bin/env',
     '-u',
+    'PATH',
+    '-u',
     'ZDOTDIR',
     '-u',
     'NVM_BIN',

@@ -27,15 +27,19 @@ export async function buildPackage(): Promise<void> {
   await Promise.all([
     chmod(path.join(buildDirectory, 'cli.js'), 0o755),
     writeZshCompletion(path.join(buildDirectory, 'completions', '_swatch'), manifest),
-    copyIntegration(),
+    copyIntegrations(),
   ]);
   await publishDist();
 }
 
-async function copyIntegration(): Promise<void> {
-  const destination = path.join(buildDirectory, 'integrations', 'wezterm.lua');
-  await mkdir(path.dirname(destination), { recursive: true });
-  await copyFile(path.join(packageRoot, 'integrations', 'wezterm.lua'), destination);
+async function copyIntegrations(): Promise<void> {
+  const destination = path.join(buildDirectory, 'integrations');
+  await mkdir(destination, { recursive: true });
+  await Promise.all(
+    ['kitty.py', 'wezterm.lua'].map((name) =>
+      copyFile(path.join(packageRoot, 'integrations', name), path.join(destination, name)),
+    ),
+  );
 }
 
 async function buildCatalog(destination: string) {

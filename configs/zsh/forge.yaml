@@ -1,7 +1,16 @@
 sync:
-  - name: config
-    source: .
-    target: ~/.config/zsh
   - name: environment
-    source: ./zshenv.zsh
+    source: ./files/zshenv.zsh
     target: ~/.zshenv
+  - name: interactive
+    source: ./files/zshrc.zsh
+    target: ~/.config/zsh/.zshrc
+  - name: keys
+    source: ./files/keys.zsh
+    target: ~/.config/zsh/keys.zsh
+  - name: tools
+    source: ./files/tools.zsh
+    target: ~/.config/zsh/tools.zsh
+  - name: fzf
+    source: ./files/fzf.zsh
+    target: ~/.config/zsh/fzf.zsh

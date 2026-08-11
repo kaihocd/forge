@@ -46,13 +46,17 @@ before applying any change.
 Forge links the editable Zsh configuration into standard locations:
 
 ```text
-~/.zshenv
-~/.config/zsh -> configs/zsh
+configs/zsh/files/zshenv.zsh -> ~/.zshenv
+configs/zsh/files/zshrc.zsh  -> ~/.config/zsh/.zshrc
+configs/zsh/files/keys.zsh   -> ~/.config/zsh/keys.zsh
+configs/zsh/files/tools.zsh  -> ~/.config/zsh/tools.zsh
+configs/zsh/files/fzf.zsh    -> ~/.config/zsh/fzf.zsh
 ```
 
 `~/.zshenv` sets `ZDOTDIR` to `${XDG_CONFIG_HOME:-$HOME/.config}/zsh` and sources
 `${XDG_CONFIG_HOME:-$HOME/.config}/zsh-local/env.zsh` when present. `.zshrc`
-assembles the explicitly ordered sources from its own configuration directory.
+contains the core interactive configuration, including completion, and loads focused key, tool,
+and fzf configuration files.
 
 History lives under `${XDG_STATE_HOME:-$HOME/.local/state}/zsh`; completion cache
 lives under `${XDG_CACHE_HOME:-$HOME/.cache}/zsh`. NVM is initialized with its
@@ -79,10 +83,30 @@ Palette to their appearance configuration.
 
 Swatch syncs its command to `${XDG_BIN_HOME:-$HOME/.local/bin}`, its Zsh
 completion to `${XDG_DATA_HOME:-$HOME/.local/share}/zsh/site-functions`, and its
-WezTerm adapter below `${XDG_DATA_HOME:-$HOME/.local/share}/swatch`.
+Kitty and WezTerm adapters below
+`${XDG_DATA_HOME:-$HOME/.local/share}/swatch`.
 
 WezTerm stores its font selection at
 `${XDG_STATE_HOME:-$HOME/.local/state}/wezterm/font.json`.
+
+## Kitty
+
+Forge links the Kitty configuration to `~/.config/kitty`. It maps the current
+Swatch Base24 Palette to Kitty colors during configuration evaluation. Each
+Kitty process watches the Swatch selection and reloads itself when `swatch use`
+atomically replaces the state file; remote control remains disabled.
+
+Regular and bold text use the main font role, while italic and bold italic text
+use the comment role. `Shift+Space`, then `Shift+F` opens the font selector. Its
+selection is stored at:
+
+```text
+${XDG_STATE_HOME:-$HOME/.local/state}/kitty/font.json
+```
+
+The same watcher reloads other running Kitty processes after that state changes.
+Core `Shift+Space` sequences cover scrollback, search, splits, pane navigation
+and resizing, tabs, and direct access to the first 20 tabs.
 
 ## Commands
 
