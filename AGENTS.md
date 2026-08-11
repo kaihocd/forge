@@ -35,7 +35,7 @@
 - Workspace packages that produce CLIs are build-first: runtime commands use
   their complete `dist/` output and must not execute TypeScript sources
   directly.
-- There is no CI workflow yet. Add one only when a real need appears.
+- `.github/workflows/code-checks.yml` runs the repository checks in CI.
 - `forge.config.yaml` owns repository-wide Homebrew requirements and the explicit
   config module registry. Config manifests own generic `sync` entries; packages
   do not expose Forge-specific manifests.
