@@ -1,13 +1,11 @@
-# ZDOTDIR entry point: redirect zsh to the built config directory.
-export ZDOTDIR="{{ zdotdir }}"
-
-# Keep machine-local Zsh data outside disposable Forge build output.
-export FORGE_ZSH_DATA_DIR="$HOME/.forge/zsh"
 export SHELL_SESSIONS_DISABLE=1
-mkdir -p "$FORGE_ZSH_DATA_DIR"
+
+export ZDOTDIR="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"
 
 # Homebrew shellenv
 eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # Machine-local environment
-[[ -r {{ localenv }} ]] && source {{ localenv }}
+typeset zsh_local_env="${XDG_CONFIG_HOME:-$HOME/.config}/zsh-local/env.zsh"
+[[ -r "$zsh_local_env" ]] && source "$zsh_local_env"
+unset zsh_local_env

@@ -1,0 +1,7 @@
+sync:
+  - name: config
+    source: .
+    target: ~/.config/zsh
+  - name: environment
+    source: ./zshenv.zsh
+    target: ~/.zshenv
