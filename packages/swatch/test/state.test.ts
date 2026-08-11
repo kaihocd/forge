@@ -29,12 +29,19 @@ beforeEach(async () => {
 
 afterEach(async () => {
   await rm(directory, { force: true, recursive: true });
+  vi.unstubAllEnvs();
 });
 
 describe('readOrInitializeCurrentThemeId', () => {
-  it('resolves current state under the Forge data directory in the user home', () => {
+  it('resolves current state under XDG state home', () => {
     expect(currentStatePath('/Users/example')).toBe(
-      path.join('/Users/example', '.forge', 'swatch', 'current.json'),
+      path.join('/Users/example', '.local', 'state', 'swatch', 'current.json'),
+    );
+    vi.stubEnv('XDG_STATE_HOME', '/state');
+    expect(currentStatePath('/Users/example')).toBe(path.join('/state', 'swatch', 'current.json'));
+    vi.stubEnv('XDG_STATE_HOME', 'relative');
+    expect(currentStatePath('/Users/example')).toBe(
+      path.join('/Users/example', '.local', 'state', 'swatch', 'current.json'),
     );
   });
 

@@ -1,7 +1,7 @@
 // Compiles the CLI, validates the complete output, and replaces dist.
 
 import { spawnSync } from 'node:child_process';
-import { chmod, mkdir, rm, writeFile } from 'node:fs/promises';
+import { chmod, copyFile, mkdir, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -27,8 +27,15 @@ export async function buildPackage(): Promise<void> {
   await Promise.all([
     chmod(path.join(buildDirectory, 'cli.js'), 0o755),
     writeZshCompletion(path.join(buildDirectory, 'completions', '_swatch'), manifest),
+    copyIntegration(),
   ]);
   await publishDist();
+}
+
+async function copyIntegration(): Promise<void> {
+  const destination = path.join(buildDirectory, 'integrations', 'wezterm.lua');
+  await mkdir(path.dirname(destination), { recursive: true });
+  await copyFile(path.join(packageRoot, 'integrations', 'wezterm.lua'), destination);
 }
 
 async function buildCatalog(destination: string) {
