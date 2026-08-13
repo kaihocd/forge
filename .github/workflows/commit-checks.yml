@@ -1,0 +1,72 @@
+name: Commit checks
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - edited
+      - opened
+      - ready_for_review
+      - reopened
+      - synchronize
+
+permissions:
+  contents: read
+
+concurrency:
+  group: commit-checks-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pull-request-author:
+    name: Validate pull request author
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+      - name: Require the repository owner
+        env:
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+        run: |
+          if [[ "$PR_AUTHOR" != "$REPOSITORY_OWNER" ]]; then
+            printf 'Pull requests must be created by %s, received %s\n' "$REPOSITORY_OWNER" "$PR_AUTHOR"
+            exit 1
+          fi
+
+  pull-request-title:
+    name: Validate pull request title
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    env:
+      HUSKY: 0
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.3
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate pull request title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: printf '%s\n' "$PR_TITLE" | pnpm exec commitlint --verbose

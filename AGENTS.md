@@ -115,5 +115,8 @@
   YAML files are formatted with Prettier and staged Lua files with StyLua.
 - Husky `commit-msg` runs `pnpm exec commitlint --edit "$1"`.
 - Commit messages must use conventional types from `.commitlintrc.json` and a
-  non-empty scope. Allowed scopes are `repo`, `nvim`, `wezterm`, `kitty`, `tmux`,
+  non-empty scope. Allowed scopes are `repo`, `nvim`, `wezterm`, `tmux`,
   `clrs`, `swatch`, `scripts`, `shared`, and `global`.
+- Pull request titles follow the same rules and are the source of squash commit
+  titles. Pull requests must come from the personal repository owner, and GitHub
+  audits every commit added to `main` after merging.

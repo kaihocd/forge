@@ -119,3 +119,18 @@ applies safe lint and formatting changes and then runs `check`.
 - Vitest for tests
 - Oxlint, Prettier, and StyLua for code quality
 - Husky, lint-staged, and Commitlint for commit checks
+
+## Contributions
+
+Changes enter `main` through pull requests and squash merging. Pull request
+titles use the Conventional Commit rules in `.commitlintrc.json`; GitHub checks
+the title again whenever it changes. In this personal repository, the pull
+request author must also be the repository owner. Development branch commits
+may be temporary because only the squashed pull request is part of the main
+history.
+
+Configure GitHub to use the pull request title as the default squash commit
+title. After each push to `main`, the history audit validates every new commit
+message as a final safeguard. The audit is intentionally post-merge and cannot
+undo an invalid commit, so the pull request title is the required pre-merge
+contract.
