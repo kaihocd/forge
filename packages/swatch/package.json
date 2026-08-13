@@ -11,6 +11,7 @@
     "start": "node dist/cli.js",
     "ensure": "tsx scripts/ensure.ts",
     "build": "tsx scripts/build.ts",
+    "sync": "tsx scripts/sync.ts",
     "schemes:fetch": "tsx scripts/schemes-fetch.ts",
     "schemes:check": "tsx scripts/schemes-check.ts",
     "lint:check": "oxlint src scripts test",

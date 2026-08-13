@@ -3,11 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "prepare": "husky",
     "start": "tsx scripts/start.ts",
     "brew": "tsx scripts/brew.ts",
     "ensure": "pnpm --recursive --if-present ensure",
-    "build": "pnpm ensure && pnpm --recursive --if-present build && tsx scripts/build.ts",
+    "build": "pnpm ensure && pnpm --recursive --if-present build",
     "sync": "tsx scripts/sync.ts",
     "sync:preview": "tsx scripts/sync.ts --preview",
     "check": "pnpm lint:check && pnpm typecheck && pnpm format:check",
@@ -17,7 +16,8 @@
     "typecheck": "tsc --noEmit && pnpm --recursive --if-present typecheck",
     "format:check": "prettier --check \"**/*.{js,mjs,ts,json,jsonc,md,yaml,yml}\" && stylua --check .",
     "format:fix": "prettier --write \"**/*.{js,mjs,ts,json,jsonc,md,yaml,yml}\" && stylua .",
-    "test": "vitest run && pnpm --recursive --if-present test"
+    "test": "vitest run && pnpm --recursive --if-present test",
+    "prepare": "husky"
   },
   "lint-staged": {
     "*.{js,mjs,ts,json,jsonc,md,yaml,yml}": "prettier --write",
@@ -29,7 +29,7 @@
     "@johnnymorganz/stylua-bin": "2.5.2",
     "@types/node": "catalog:",
     "husky": "9.1.7",
-    "lint-staged": "17.2.0",
+    "lint-staged": "17.3.0",
     "oxlint": "catalog:",
     "prettier": "catalog:",
     "tsx": "catalog:",

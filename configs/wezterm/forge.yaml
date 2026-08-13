@@ -1,0 +1,4 @@
+sync:
+  - name: main
+    source: ./files
+    target: ~/.config/wezterm

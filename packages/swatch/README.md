@@ -10,16 +10,26 @@ transforming and applying themes to tools such as Neovim and tmux.
 Swatch does not write consumer configuration, reload applications, or provide
 consumer-specific export formats.
 
+Swatch may own thin runtime adapters that expose its current Palette through a
+consumer's APIs. Consumers remain responsible for mapping and applying that
+Palette to their own appearance configuration.
+
+Adapters use `swatch current --json` as the Theme data interface and `swatch
+current --path` for reload watchers. They do not read catalog/state internals or
+cache Shell-derived runtime paths across consumer configuration reloads.
+
 The package must be built before use. A build compiles the CLI and transforms
 cached Base16 schemes into a normalized Base24 catalog under `dist/`.
 
 ## Package Shape
 
 - `src/` contains the runtime CLI.
+- `integrations/` contains thin consumer adapters for accessing Swatch data;
+  appearance policy remains in each consumer's configuration.
 - `src/catalog.ts` reads and validates the built manifest and themes without
   depending on the current working directory.
 - `src/state.ts` stores only the selected Theme ID in
-  `~/.forge/swatch/current.json`.
+  `${XDG_STATE_HOME:-$HOME/.local/state}/swatch/current.json`.
 - `scripts/` assembles the package and fetches, validates, and processes themes.
 - `test/` contains local upstream fixtures and catalog, CLI, completion, state,
   cache publication, scheme, and theme contract tests.
@@ -39,6 +49,7 @@ Run package commands from the repository root through the workspace scope:
 pnpm --filter @forge/swatch start -- list
 pnpm --filter @forge/swatch ensure
 pnpm --filter @forge/swatch build
+pnpm --filter @forge/swatch sync
 
 pnpm --filter @forge/swatch schemes:fetch
 pnpm --filter @forge/swatch schemes:check
@@ -68,6 +79,12 @@ JSON file per theme plus `dist/catalog/manifest.json`. Every Theme includes its
 `dark` or `light` variant. The manifest records the source revision, the stable
 theme ID list, and the validated `default-dark` default.
 
+The package `sync` script links the built CLI into
+`${XDG_BIN_HOME:-$HOME/.local/bin}`, the Zsh completion into
+`${XDG_DATA_HOME:-$HOME/.local/share}/zsh/site-functions`, and the WezTerm
+adapter below `${XDG_DATA_HOME:-$HOME/.local/share}/swatch`. It plans
+every artifact before writing and refuses unmanaged conflicts.
+
 ## CLI Contract
 
 The runtime interface uses explicit subcommands:
@@ -93,7 +110,8 @@ the network or `.cache/` source data.
 
 The catalog is the only source of Theme data and must be built before any state
 command can run. The first `swatch current` or `swatch current --json` creates
-`~/.forge/swatch/current.json` with this minimal state:
+`${XDG_STATE_HOME:-$HOME/.local/state}/swatch/current.json` with this minimal
+state:
 
 ```json
 {
@@ -150,8 +168,6 @@ The package build generates a static Zsh completion at
 from the same validated manifest, so completion does not start Node or access
 the network.
 
-Forge exposes the package-owned CLI and completion under the root `dist/bin/`
-and `dist/completions/` runtime directories. Newly created links use relative
-targets. The generated Zsh configuration adds those build-time-resolved
-directories to `PATH` and `fpath` before `compinit`. Swatch writes only its
-current selection under the Forge-owned `~/.forge/swatch/` data directory.
+The package syncs its CLI and completion to the standard user command and Zsh
+completion directories. Newly created links use relative targets. Swatch writes
+only its current selection under its XDG state directory.

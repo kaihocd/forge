@@ -1,75 +1,38 @@
-# Forge configuration — the single source of truth for local setup.
+# Forge-wide orchestration configuration.
 #
 # brew installs Homebrew taps, formulae, and casks. `pnpm brew` is idempotent:
 # already-installed entries are skipped, missing entries are installed.
 #
-# links symlinks repo files into place as-is. Use it for config files that do
-# not need template rendering, such as Starship's TOML config.
-#
-# build runs explicit builders that generate managed files or create declared
-# runtime links. Generated files carry a GENERATED_BY_FORGE marker; runtime links
-# must be absent or resolve to their declared source.
-# Relative paths are resolved from the repo root; `~` resolves to the home dir.
-#
-# Zsh currently uses two build tasks:
-# - zsh-runtime links the declared CLI and completion artifacts, then assembles
-#   the main template and ordered sources into ./dist/zsh/.zshrc.
-# - zshenv writes ~/.zshenv, points ZDOTDIR at ./dist/zsh, and initializes the
-#   machine-local environment file only when it is missing. The generated
-#   zshenv keeps persistent Zsh data under ~/.forge/zsh.
-#
+# modules explicitly enables configuration domains. Workspace packages own
+# their own build and deployment lifecycle.
+
 brew:
   taps:
-    # Filesystem extensions
-    - gromgit/fuse # Additional macOS FUSE packages
+    - gromgit/fuse
   formulas:
-    # Shell experience
-    - starship # Fast, customizable cross-shell prompt
-    - zinit # Zsh plugin manager
-    - zoxide # Smarter cd command with directory ranking
-    # CLI productivity
-    - bat # cat alternative with syntax highlighting
-    - fd # Fast, user-friendly find alternative
-    - fzf # Interactive command-line fuzzy finder
-    - ripgrep # Fast recursive text search
-    # Development runtimes
-    - nvm # Install and switch between Node.js versions
-    # Editors
-    - neovim # Extensible terminal-based text editor
+    - starship
+    - zinit
+    - zoxide
+    - bat
+    - fd
+    - fzf
+    - ripgrep
+    - luajit
+    - nvm
+    - neovim
   casks:
-    # Filesystems
-    - macfuse # Filesystem extension framework for macOS
-    - sshfs-mac # Mount remote filesystems over SSH
-    # Developer fonts
-    - font-fira-code-nerd-font # Fira Code with icons and extra glyphs
-    - font-jetbrains-mono-nerd-font # JetBrains Mono with icons and extra glyphs
-links:
+    - macfuse
+    - sshfs-mac
+    - font-fira-code-nerd-font
+    - font-jetbrains-mono-nerd-font
+
+modules:
   - name: starship
-    source: ./configs/starship/starship.toml
-    target: ~/.config/starship.toml
-build:
-  - builder: zsh-runtime
-    source: ./configs/zsh/zshrc.zsh
-    output: ./dist/zsh/.zshrc
-    opts:
-      executables:
-        - name: swatch
-          source: ./packages/swatch/dist/cli.js
-          output: ./dist/bin/swatch
-      completions:
-        - name: swatch completion
-          source: ./packages/swatch/dist/completions/_swatch
-          output: ./dist/completions/_swatch
-      sources:
-        - ./configs/zsh/completion.zsh
-        - ./configs/zsh/aliases.zsh
-        - ./configs/zsh/keybindings.zsh
-        - ./configs/zsh/extra.zsh
-        - ./configs/zsh/fzf.zsh
-        - ./configs/zsh/zinit.zsh
-  - builder: zshenv
-    source: ./configs/zsh/zshenv.zsh
-    output: ~/.zshenv
-    opts:
-      zdotdir: ./dist/zsh
-      localenv: ~/.local.env.zsh
+    type: config
+    manifest: ./configs/starship/forge.yaml
+  - name: wezterm
+    type: config
+    manifest: ./configs/wezterm/forge.yaml
+  - name: zsh
+    type: config
+    manifest: ./configs/zsh/forge.yaml

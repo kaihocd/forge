@@ -1,0 +1,4 @@
+sync:
+  - name: main
+    source: ./files/starship.toml
+    target: ~/.config/starship.toml

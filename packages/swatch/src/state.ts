@@ -20,7 +20,13 @@ export class StateError extends Error {
 }
 
 export function currentStatePath(homeDirectory = homedir()): string {
-  return path.join(homeDirectory, '.forge', 'swatch', 'current.json');
+  const stateHome =
+    absoluteXdgPath(process.env.XDG_STATE_HOME) ?? path.join(homeDirectory, '.local', 'state');
+  return path.join(stateHome, 'swatch', 'current.json');
+}
+
+function absoluteXdgPath(value: string | undefined): string | undefined {
+  return value && path.isAbsolute(value) ? value : undefined;
 }
 
 export async function readOrInitializeCurrentThemeId(
