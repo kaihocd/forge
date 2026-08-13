@@ -1,4 +1,5 @@
 local adapter_path = assert(arg[1], 'adapter path is required')
+local shell = assert(os.getenv('SHELL'), 'SHELL is required')
 local discovery_count = 0
 local watched_paths = {}
 
@@ -34,7 +35,7 @@ package.preload.wezterm = function()
           'NVM_BIN',
           '-u',
           'NVM_INC',
-          '/bin/zsh',
+          shell,
           '-ic',
           'exec /usr/bin/env -0',
         })
