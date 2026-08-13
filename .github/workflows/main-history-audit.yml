@@ -1,0 +1,59 @@
+name: Main history audit
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: main-history-audit-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  commit-messages:
+    name: Audit main commit messages
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    env:
+      HUSKY: 0
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.3
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Audit pushed commit messages
+        env:
+          AFTER_SHA: ${{ github.event.after }}
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if [[ "$BEFORE_SHA" == "0000000000000000000000000000000000000000" ]]; then
+            commit_range="$AFTER_SHA"
+          else
+            commit_range="$BEFORE_SHA..$AFTER_SHA"
+          fi
+
+          while IFS= read -r commit; do
+            git log -1 --format=%B "$commit" | pnpm exec commitlint --verbose
+          done < <(git rev-list --reverse "$commit_range")
