@@ -12,16 +12,15 @@ keymapping.apply(config)
 theme.apply(config, swatch.current_palette())
 tab.setup(config)
 
+config.front_end = 'WebGpu'
 config.automatically_reload_config = true
 config.adjust_window_size_when_changing_font_size = false
-config.integrated_title_button_alignment = 'Left'
-config.integrated_title_button_style = 'MacOsNative'
 config.show_close_tab_button_in_tabs = true
+config.window_decorations = 'INTEGRATED_BUTTONS|RESIZE'
 config.window_content_alignment = {
   horizontal = 'Center',
   vertical = 'Center',
 }
-config.window_decorations = 'INTEGRATED_BUTTONS|RESIZE'
 config.window_padding = {
   left = '0.5cell',
   right = '0.5cell',

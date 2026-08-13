@@ -1,4 +1,0 @@
-sync:
-  - name: main
-    source: ./files
-    target: ~/.config/kitty

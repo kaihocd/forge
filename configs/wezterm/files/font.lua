@@ -159,7 +159,7 @@ local function apply_fonts(config, state)
 
   config.font = font_with_fallback(main, fallback, 'Regular', false)
   config.font_size = font_size
-  config.line_height = 1.35
+  config.line_height = 1.4
   config.font_rules = {
     {
       intensity = 'Bold',
