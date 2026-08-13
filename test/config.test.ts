@@ -1,5 +1,4 @@
-import { constants } from 'node:fs';
-import { access, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -13,17 +12,12 @@ afterEach(async () => {
 });
 
 describe('module configuration', () => {
-  it('keeps Kitty generated config executable', async () => {
-    const generatedConfig = path.join(import.meta.dirname, '../configs/kitty/files/dynamic.py');
-    await expect(access(generatedConfig, constants.X_OK)).resolves.toBeUndefined();
-  });
-
   it('loads generic config links in declaration order', async () => {
     const root = await temporaryDirectory();
     await writeManifest(
       root,
-      'configs/kitty/forge.yaml',
-      'sync:\n  - name: main\n    source: ./files\n    target: ~/.config/kitty\n',
+      'configs/alpha/forge.yaml',
+      'sync:\n  - name: main\n    source: ./files\n    target: ~/.config/alpha\n',
     );
     await writeManifest(
       root,
@@ -36,16 +30,16 @@ describe('module configuration', () => {
       'sync:\n  - name: environment\n    source: ./files/zshenv.zsh\n    target: ~/.zshenv\n  - name: interactive\n    source: ./files/zshrc.zsh\n    target: ~/.config/zsh/.zshrc\n  - name: keys\n    source: ./files/keys.zsh\n    target: ~/.config/zsh/keys.zsh\n  - name: tools\n    source: ./files/tools.zsh\n    target: ~/.config/zsh/tools.zsh\n  - name: fzf\n    source: ./files/fzf.zsh\n    target: ~/.config/zsh/fzf.zsh\n',
     );
     await writeConfig(root, [
-      configModule('kitty', './configs/kitty/forge.yaml'),
+      configModule('alpha', './configs/alpha/forge.yaml'),
       configModule('wezterm', './configs/wezterm/forge.yaml'),
       configModule('zsh', './configs/zsh/forge.yaml'),
     ]);
     await expect(loadDomainConfig(root)).resolves.toEqual({
       sync: [
         {
-          name: 'kitty/main',
-          source: path.join(root, 'configs/kitty/files'),
-          target: '~/.config/kitty',
+          name: 'alpha/main',
+          source: path.join(root, 'configs/alpha/files'),
+          target: '~/.config/alpha',
         },
         {
           name: 'wezterm/main',

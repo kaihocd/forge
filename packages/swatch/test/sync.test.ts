@@ -18,7 +18,6 @@ describe('package sync', () => {
     expect(createPackageSyncEntries({ home }, root).map(({ name }) => name)).toEqual([
       'swatch/command',
       'swatch/completion',
-      'swatch/Kitty integration',
       'swatch/WezTerm integration',
     ]);
     expect(
@@ -47,12 +46,6 @@ describe('package sync', () => {
         path.join(root, 'dist/integrations/wezterm.lua'),
       ),
     );
-    expect(await readlink(path.join(home, '.local/share/swatch/integrations/kitty.py'))).toBe(
-      path.relative(
-        path.join(home, '.local/share/swatch/integrations'),
-        path.join(root, 'dist/integrations/kitty.py'),
-      ),
-    );
   });
 
   it('respects absolute XDG sync directories', async () => {
@@ -68,12 +61,6 @@ describe('package sync', () => {
       path.relative(
         path.join(dataHome, 'zsh/site-functions'),
         path.join(root, 'dist/completions/_swatch'),
-      ),
-    );
-    await expect(readlink(path.join(dataHome, 'swatch/integrations/kitty.py'))).resolves.toBe(
-      path.relative(
-        path.join(dataHome, 'swatch/integrations'),
-        path.join(root, 'dist/integrations/kitty.py'),
       ),
     );
   });
@@ -105,7 +92,6 @@ async function fixture(): Promise<string> {
   for (const relative of [
     'dist/cli.js',
     'dist/completions/_swatch',
-    'dist/integrations/kitty.py',
     'dist/integrations/wezterm.lua',
   ]) {
     const filePath = path.join(root, relative);

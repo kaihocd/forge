@@ -36,7 +36,7 @@ async function copyIntegrations(): Promise<void> {
   const destination = path.join(buildDirectory, 'integrations');
   await mkdir(destination, { recursive: true });
   await Promise.all(
-    ['kitty.py', 'wezterm.lua'].map((name) =>
+    ['wezterm.lua'].map((name) =>
       copyFile(path.join(packageRoot, 'integrations', name), path.join(destination, name)),
     ),
   );
