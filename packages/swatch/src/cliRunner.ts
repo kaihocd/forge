@@ -3,12 +3,7 @@
 import { CatalogError, readManifest, readTheme } from './catalog.js';
 import { cliContract, type CliCommandName } from './commands.js';
 import type { CatalogManifest, Theme } from './schema.js';
-import {
-  currentStatePath,
-  readOrInitializeCurrentThemeId,
-  selectCurrentTheme,
-  StateError,
-} from './state.js';
+import { StateError, readCurrentTheme, selectCurrentTheme } from './state.js';
 
 interface CliIo {
   stdout: (output: string) => void;
@@ -27,12 +22,15 @@ interface RunCliOptions {
 }
 
 interface StateStore {
-  path: () => string;
-  readOrInitialize: (
+  readCurrentTheme: (
     manifest: CatalogManifest,
-    validateTheme: (themeId: string) => Promise<unknown>,
-  ) => Promise<string>;
-  select: (themeId: string, manifest: CatalogManifest) => Promise<void>;
+    readTheme: (themeId: string) => Promise<Theme>,
+  ) => Promise<Theme>;
+  selectCurrentTheme: (
+    themeId: string,
+    manifest: CatalogManifest,
+    readTheme: (themeId: string) => Promise<Theme>,
+  ) => Promise<void>;
 }
 
 const defaultIo: CliIo = {
@@ -41,9 +39,8 @@ const defaultIo: CliIo = {
 };
 const defaultCatalog: CatalogReader = { readManifest, readTheme };
 const defaultState: StateStore = {
-  path: currentStatePath,
-  readOrInitialize: readOrInitializeCurrentThemeId,
-  select: selectCurrentTheme,
+  readCurrentTheme,
+  selectCurrentTheme,
 };
 
 export async function runCli(args: string[], options: RunCliOptions = {}): Promise<number> {
@@ -98,21 +95,17 @@ export async function runCli(args: string[], options: RunCliOptions = {}): Promi
       io.stderr(commandHelpText('current'));
       return cliContract.exitCodes.success;
     }
-    if (
-      commandArgs.length > 1 ||
-      (commandArgs[0] && !['--json', '--path'].includes(commandArgs[0]))
-    ) {
-      return usageError(io, 'The current command only accepts --json or --path.');
+    if (commandArgs.length > 1 || (commandArgs[0] && commandArgs[0] !== '--json')) {
+      return usageError(io, 'The current command only accepts --json.');
     }
 
     return runRuntimeCommand(io, async () => {
       const manifest = await catalog.readManifest();
-      if (commandArgs[0] === '--path') return `${state.path()}\n`;
-      const themeId = await state.readOrInitialize(manifest, catalog.readTheme);
+      const theme = await state.readCurrentTheme(manifest, catalog.readTheme);
       if (commandArgs[0] === '--json') {
-        return `${JSON.stringify(await catalog.readTheme(themeId), null, 2)}\n`;
+        return `${JSON.stringify(theme, null, 2)}\n`;
       }
-      return `${themeId}\n`;
+      return `${theme.id}\n`;
     });
   }
 
@@ -128,8 +121,7 @@ export async function runCli(args: string[], options: RunCliOptions = {}): Promi
     return runRuntimeCommand(io, async () => {
       const themeId = commandArgs[0]!;
       const manifest = await catalog.readManifest();
-      await catalog.readTheme(themeId);
-      await state.select(themeId, manifest);
+      await state.selectCurrentTheme(themeId, manifest, catalog.readTheme);
       return `${themeId}\n`;
     });
   }

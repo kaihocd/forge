@@ -34,11 +34,6 @@ export function createPackageSyncEntries(
       source: path.join(root, 'dist', 'completions', '_swatch'),
       target: path.join(dataHome, 'zsh', 'site-functions', '_swatch'),
     },
-    {
-      name: 'swatch/WezTerm integration',
-      source: path.join(root, 'dist', 'integrations', 'wezterm.lua'),
-      target: path.join(dataHome, 'swatch', 'integrations', 'wezterm.lua'),
-    },
   ];
 }
 

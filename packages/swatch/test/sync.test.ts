@@ -18,7 +18,6 @@ describe('package sync', () => {
     expect(createPackageSyncEntries({ home }, root).map(({ name }) => name)).toEqual([
       'swatch/command',
       'swatch/completion',
-      'swatch/WezTerm integration',
     ]);
     expect(
       createPackageSyncEntries({ home }, root).every(({ source, target }) => {
@@ -38,12 +37,6 @@ describe('package sync', () => {
       path.relative(
         path.join(home, '.local/share/zsh/site-functions'),
         path.join(root, 'dist/completions/_swatch'),
-      ),
-    );
-    expect(await readlink(path.join(home, '.local/share/swatch/integrations/wezterm.lua'))).toBe(
-      path.relative(
-        path.join(home, '.local/share/swatch/integrations'),
-        path.join(root, 'dist/integrations/wezterm.lua'),
       ),
     );
   });
@@ -89,11 +82,7 @@ describe('package sync', () => {
 
 async function fixture(): Promise<string> {
   const root = await temporaryDirectory();
-  for (const relative of [
-    'dist/cli.js',
-    'dist/completions/_swatch',
-    'dist/integrations/wezterm.lua',
-  ]) {
+  for (const relative of ['dist/cli.js', 'dist/completions/_swatch']) {
     const filePath = path.join(root, relative);
     await mkdir(path.dirname(filePath), { recursive: true });
     await writeFile(filePath, relative);

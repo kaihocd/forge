@@ -140,8 +140,8 @@ describe('runCli', () => {
 
     await expect(runCli(['current'], currentOptions)).resolves.toBe(1);
 
-    expect(currentOptions.state.readOrInitialize).not.toHaveBeenCalled();
-    expect(currentOptions.state.select).not.toHaveBeenCalled();
+    expect(currentOptions.state.readCurrentTheme).not.toHaveBeenCalled();
+    expect(currentOptions.state.selectCurrentTheme).not.toHaveBeenCalled();
     expect(output.stdout).toEqual([]);
     expect(output.stderr).toEqual(['Error: Missing catalog manifest. Run `pnpm build` first\n']);
   });
@@ -154,18 +154,7 @@ describe('runCli', () => {
     await expect(runCli(['current', '--json'], currentOptions)).resolves.toBe(0);
 
     expect(output.stdout).toEqual(['one-dark\n', `${JSON.stringify(theme, null, 2)}\n`]);
-    expect(currentOptions.state.readOrInitialize).toHaveBeenCalledTimes(2);
-  });
-
-  it('validates the catalog but does not initialize state for current --path', async () => {
-    const output = captureOutput();
-    const currentOptions = options(output);
-
-    await expect(runCli(['current', '--path'], currentOptions)).resolves.toBe(0);
-
-    expect(output.stdout).toEqual(['/tmp/swatch-current.json\n']);
-    expect(currentOptions.catalog.readManifest).toHaveBeenCalledOnce();
-    expect(currentOptions.state.readOrInitialize).not.toHaveBeenCalled();
+    expect(currentOptions.state.readCurrentTheme).toHaveBeenCalledTimes(2);
   });
 
   it('validates and selects a requested theme', async () => {
@@ -175,7 +164,11 @@ describe('runCli', () => {
     await expect(runCli(['use', 'one-dark'], currentOptions)).resolves.toBe(0);
 
     expect(currentOptions.catalog.readTheme).toHaveBeenCalledWith('one-dark');
-    expect(currentOptions.state.select).toHaveBeenCalledWith('one-dark', manifest);
+    expect(currentOptions.state.selectCurrentTheme).toHaveBeenCalledWith(
+      'one-dark',
+      manifest,
+      currentOptions.catalog.readTheme,
+    );
     expect(output.stdout).toEqual(['one-dark\n']);
   });
 });
@@ -188,9 +181,10 @@ function options(output: ReturnType<typeof captureOutput>) {
       readTheme: vi.fn(async () => theme),
     },
     state: {
-      path: vi.fn(() => '/tmp/swatch-current.json'),
-      readOrInitialize: vi.fn(async () => 'one-dark'),
-      select: vi.fn(async () => undefined),
+      readCurrentTheme: vi.fn(async () => theme),
+      selectCurrentTheme: vi.fn(async (themeId, manifest, readTheme) => {
+        await readTheme(themeId);
+      }),
     },
   };
 }

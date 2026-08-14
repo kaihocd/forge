@@ -16,8 +16,8 @@ describe('cliContract', () => {
       options: [{ name: '--json' }],
     });
     expect(cliContract.commands.find(({ name }) => name === 'current')).toMatchObject({
-      usage: 'swatch current [--json | --path]',
-      options: [{ name: '--json' }, { name: '--path' }],
+      usage: 'swatch current [--json]',
+      options: [{ name: '--json' }],
     });
     expect(cliContract.commands.find(({ name }) => name === 'use')).toMatchObject({
       usage: 'swatch use <theme-id>',
@@ -40,7 +40,6 @@ describe('cliContract', () => {
         get: 'json',
         current: 'lines',
         currentJson: 'json',
-        currentPath: 'lines',
         use: 'lines',
       },
     });
