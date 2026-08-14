@@ -1,7 +1,5 @@
 # Forge
 
-Add a test msg.
-
 Forge is my development-environment workspace. It keeps editable configuration
 and workspace packages in one checkout, builds generated runtime files, and
 links configuration into the paths used by local applications.
@@ -17,12 +15,13 @@ pnpm start -> brew -> build -> sync
 - `brew` converges Homebrew taps, formulae, and casks from `forge.config.yaml`.
 - `build` ensures missing external inputs and generates package artifacts inside
   the repository. Domains without generated artifacts do not need a build step.
-- `sync` lets packages expose built artifacts in standard user locations, then
-  applies links from enabled configuration modules.
+- `sync` lets enabled packages expose their artifacts and configuration sources in
+  standard user locations. Forge aggregates each package's `sync` plan and applies
+  the combined installation plan.
 
-Enabled configuration modules are explicitly registered in
-`forge.config.yaml#modules`. Unregistered manifests have no effect. Packages own
-their build, sync, and runtime state independently.
+Enabled packages are explicitly registered in
+`forge.config.yaml#modules`. Unregistered packages have no effect. Each package
+owns its build, sync, and runtime state independently.
 
 ## Setup
 
@@ -48,11 +47,11 @@ before applying any change.
 Forge links the editable Zsh configuration into standard locations:
 
 ```text
-configs/zsh/files/zshenv.zsh -> ~/.zshenv
-configs/zsh/files/zshrc.zsh  -> ~/.config/zsh/.zshrc
-configs/zsh/files/keys.zsh   -> ~/.config/zsh/keys.zsh
-configs/zsh/files/tools.zsh  -> ~/.config/zsh/tools.zsh
-configs/zsh/files/fzf.zsh    -> ~/.config/zsh/fzf.zsh
+packages/zsh/files/zshenv.zsh -> ~/.zshenv
+packages/zsh/files/zshrc.zsh  -> ~/.config/zsh/.zshrc
+packages/zsh/files/keys.zsh   -> ~/.config/zsh/keys.zsh
+packages/zsh/files/tools.zsh  -> ~/.config/zsh/tools.zsh
+packages/zsh/files/fzf.zsh    -> ~/.config/zsh/fzf.zsh
 ```
 
 `~/.zshenv` sets `ZDOTDIR` to `${XDG_CONFIG_HOME:-$HOME/.config}/zsh` and sources
@@ -68,25 +67,22 @@ available without version resolution during every shell startup.
 ## Swatch
 
 `packages/swatch` builds a normalized Base24 Theme catalog and a JSON-first CLI.
-Its catalog is the sole Theme data source. Persistent state stores only the
-selected Theme ID at:
-
-```text
-${XDG_STATE_HOME:-$HOME/.local/state}/swatch/current.json
-```
+Its catalog is the sole Theme data source. The selected theme is stored in the
+Forge State Hub under the `swatch.theme` key; `swatch.selection` retains only
+the Theme ID for recovery.
 
 `current` and `current --json` initialize the catalog default only when state is
-missing. `current --path` never creates state. Invalid or dangling state fails
-and can only be repaired by an explicit valid `swatch use` selection.
+missing. Invalid or dangling state fails and can only be repaired by an explicit
+valid `swatch use` selection.
 
-Swatch may own thin runtime adapters that expose its current Palette through a
-consumer's APIs. Consumers remain responsible for mapping and applying that
-Palette to their appearance configuration.
+Swatch consumers read theme data directly from the Forge State Hub. Each
+consumer owns its own mapping from the shared Theme Palette to its appearance
+configuration.
 
-Swatch syncs its command to `${XDG_BIN_HOME:-$HOME/.local/bin}`, its Zsh
-completion to `${XDG_DATA_HOME:-$HOME/.local/share}/zsh/site-functions`, and its
-WezTerm adapter below
-`${XDG_DATA_HOME:-$HOME/.local/share}/swatch`.
+Swatch syncs its command to `${XDG_BIN_HOME:-$HOME/.local/bin}` and its Zsh
+completion to `${XDG_DATA_HOME:-$HOME/.local/share}/zsh/site-functions`. The
+WezTerm package consumes `swatch.theme` through the Forge State Hub and applies
+it in its own configuration.
 
 WezTerm stores its font selection at
 `${XDG_STATE_HOME:-$HOME/.local/state}/wezterm/font.json`.
