@@ -1,0 +1,28 @@
+{
+  "name": "@forge/starship",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Forge Starship prompt configuration.",
+  "type": "module",
+  "scripts": {
+    "sync": "tsx scripts/sync.ts",
+    "check": "pnpm lint:check && pnpm typecheck && pnpm format:check",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint:check": "oxlint scripts",
+    "lint:fix": "oxlint --fix scripts",
+    "format:check": "prettier --check \"scripts/**/*.ts\" \"package.json\" \"forge.yaml\"",
+    "format:fix": "prettier --write \"scripts/**/*.ts\" \"package.json\" \"forge.yaml\"",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@forge/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "oxlint": "catalog:",
+    "prettier": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

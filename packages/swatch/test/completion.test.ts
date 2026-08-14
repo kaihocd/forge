@@ -20,12 +20,10 @@ describe('generateZshCompletion', () => {
     expect(completion).toContain('#compdef swatch');
     expect(completion).toContain("'list:List available theme IDs.'");
     expect(completion).toContain("'get:Read one normalized Base24 theme.'");
-    expect(completion).toContain(
-      "'current:Read the current theme, initializing the catalog default when missing.'",
-    );
+    expect(completion).toContain("'current:Read the current theme from the Forge State Hub.'");
     expect(completion).toContain("'use:Select a theme from the built catalog.'");
     expect(completion).toContain("'--json:Write the catalog manifest as JSON.'");
-    expect(completion).toContain("'--path:Write the current state file path without creating it.'");
+    expect(completion).toContain("'--json:Write the current Theme as JSON.'");
     expect(completion).toContain("'catppuccin-mocha'");
     expect(completion).toContain("'one-dark'");
   });
@@ -98,7 +96,6 @@ ${generateZshCompletion(manifest)}
     const use = runCompletion(completion, 'use');
 
     expect(current).toContain('--json');
-    expect(current).toContain('--path');
     expect(use).toContain('catppuccin-mocha');
     expect(use).toContain('one-dark');
   });

@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 
-import { loadDomainConfig } from './lib/config.js';
+import { loadConfig } from './lib/config.js';
 import { errTag, okTag, red, skipTag } from './lib/colors.js';
 import { applySyncPlan, createSyncPlan } from './sync/linker.js';
 import { collectPackageSyncEntries } from './sync/packages.js';
@@ -12,11 +12,16 @@ if (unknownArgs.length > 0) {
   console.error(`${errTag()} ${red(`unknown argument: ${unknownArgs.join(', ')}`)}`);
   process.exit(1);
 }
+
 try {
+  const config = await loadConfig();
+  const enabledPackages = config.modules.map((module) => module.name);
+
   const packageEntries = await collectPackageSyncEntries((planDirectory) => {
+    if (enabledPackages.length === 0) return;
+
     const packageArgs = [
-      '--recursive',
-      '--if-present',
+      ...enabledPackages.flatMap((name) => ['--filter', name]),
       'run',
       'sync',
       `--plan-dir=${planDirectory}`,
@@ -28,13 +33,11 @@ try {
     }
   });
 
-  const config = await loadDomainConfig();
-  const entries = [...packageEntries, ...config.sync];
-  if (entries.length === 0) {
+  if (packageEntries.length === 0) {
     console.log(`${skipTag()} no links configured`);
     process.exit(0);
   }
-  const plan = await createSyncPlan(entries);
+  const plan = await createSyncPlan(packageEntries);
   for (const action of plan) {
     if (action.status === 'skip') console.log(`${skipTag()} ${action.name}: already linked`);
     else if (action.status === 'conflict')

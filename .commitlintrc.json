@@ -9,7 +9,20 @@
     "scope-enum": [
       2,
       "always",
-      ["repo", "nvim", "wezterm", "tmux", "clrs", "swatch", "scripts", "shared", "global"]
+      [
+        "repo",
+        "nvim",
+        "wezterm",
+        "tmux",
+        "clrs",
+        "swatch",
+        "scripts",
+        "shared",
+        "global",
+        "state",
+        "starship",
+        "zsh"
+      ]
     ],
     "scope-empty": [2, "never"],
     "subject-empty": [2, "never"],

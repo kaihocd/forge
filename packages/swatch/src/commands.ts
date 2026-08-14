@@ -14,7 +14,6 @@ export const cliContract = {
       get: 'json',
       current: 'lines',
       currentJson: 'json',
-      currentPath: 'lines',
       use: 'lines',
     },
   },
@@ -56,17 +55,13 @@ export const cliContract = {
     },
     {
       name: 'current',
-      usage: 'swatch current [--json | --path]',
-      description: 'Read the current theme, initializing the catalog default when missing.',
+      usage: 'swatch current [--json]',
+      description: 'Read the current theme from the Forge State Hub.',
       arguments: [],
       options: [
         {
           name: '--json',
-          description: 'Write the current normalized Theme as JSON.',
-        },
-        {
-          name: '--path',
-          description: 'Write the current state file path without creating it.',
+          description: 'Write the current Theme as JSON.',
         },
       ],
     },

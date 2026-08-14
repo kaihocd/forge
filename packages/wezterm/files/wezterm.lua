@@ -9,11 +9,15 @@ local config = wezterm.config_builder()
 
 font.setup(config)
 keymapping.apply(config)
-theme.apply(config, swatch.current_palette())
+local palette = swatch.current_palette()
+if palette then
+  theme.apply(config, palette)
+end
 tab.setup(config)
 
 config.front_end = 'WebGpu'
 config.automatically_reload_config = true
+config.status_update_interval = 1000
 config.adjust_window_size_when_changing_font_size = false
 config.show_close_tab_button_in_tabs = true
 config.window_decorations = 'INTEGRATED_BUTTONS|RESIZE'

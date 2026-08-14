@@ -27,12 +27,13 @@ brew:
     - font-jetbrains-mono-nerd-font
 
 modules:
-  - name: starship
-    type: config
-    manifest: ./configs/starship/forge.yaml
-  - name: wezterm
-    type: config
-    manifest: ./configs/wezterm/forge.yaml
-  - name: zsh
-    type: config
-    manifest: ./configs/zsh/forge.yaml
+  - name: '@forge/starship'
+    type: package
+  - name: '@forge/state'
+    type: package
+  - name: '@forge/swatch'
+    type: package
+  - name: '@forge/wezterm'
+    type: package
+  - name: '@forge/zsh'
+    type: package

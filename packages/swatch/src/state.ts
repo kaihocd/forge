@@ -1,11 +1,8 @@
-// Stores the selected theme ID separately from the built catalog data.
+// Manages the selected Swatch theme through the Forge State Hub.
 
-import { randomUUID } from 'node:crypto';
-import { lstat, mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
-import { homedir } from 'node:os';
-import path from 'node:path';
+import { StateClient } from '@forge/state';
 
-import { currentStateSchema, type CatalogManifest, type CurrentState } from './schema.js';
+import { themeSchema, type CatalogManifest, type Theme } from './schema.js';
 
 export class StateError extends Error {
   override readonly name = 'StateError';
@@ -19,86 +16,76 @@ export class StateError extends Error {
   }
 }
 
-export function currentStatePath(homeDirectory = homedir()): string {
-  const stateHome =
-    absoluteXdgPath(process.env.XDG_STATE_HOME) ?? path.join(homeDirectory, '.local', 'state');
-  return path.join(stateHome, 'swatch', 'current.json');
-}
+const selectionKey = 'swatch.selection';
+const themeKey = 'swatch.theme';
 
-function absoluteXdgPath(value: string | undefined): string | undefined {
-  return value && path.isAbsolute(value) ? value : undefined;
-}
-
-export async function readOrInitializeCurrentThemeId(
+export async function readCurrentTheme(
   manifest: CatalogManifest,
-  validateTheme: (themeId: string) => Promise<unknown>,
-  filePath = currentStatePath(),
-): Promise<string> {
-  const state = await readCurrentState(filePath);
+  readTheme: (themeId: string) => Promise<Theme>,
+  client: StateClient = new StateClient(),
+): Promise<Theme> {
+  const values = await readStateKeys(client, [themeKey, selectionKey]);
 
-  if (!state) {
-    await validateTheme(manifest.defaultTheme);
-    await writeCurrentState(filePath, { id: manifest.defaultTheme });
-    return manifest.defaultTheme;
+  const theme = values[themeKey];
+  if (isTheme(theme)) return theme;
+
+  const selection = values[selectionKey];
+  if (isSelection(selection)) {
+    assertThemeInCatalog(selection.id, manifest);
+    const resolved = await readTheme(selection.id);
+    await writeCurrentTheme(client, resolved);
+    return resolved;
   }
 
-  assertThemeInCatalog(state.id, manifest);
-  await validateTheme(state.id);
-  return state.id;
+  const defaultTheme = await readTheme(manifest.defaultTheme);
+  await writeCurrentTheme(client, defaultTheme);
+  return defaultTheme;
 }
 
 export async function selectCurrentTheme(
   themeId: string,
   manifest: CatalogManifest,
-  filePath = currentStatePath(),
+  readTheme: (themeId: string) => Promise<Theme>,
+  client: StateClient = new StateClient(),
 ): Promise<void> {
   assertThemeInCatalog(themeId, manifest);
 
-  let state: CurrentState | undefined;
-  try {
-    state = await readCurrentState(filePath);
-  } catch (error) {
-    if (!(error instanceof StateError) || error.kind !== 'invalid') throw error;
+  const currentId = await readCurrentSelection(client);
+  if (currentId === themeId) {
+    return;
   }
 
-  if (state?.id === themeId) return;
-  await writeCurrentState(filePath, { id: themeId });
-}
-
-async function readCurrentState(filePath: string): Promise<CurrentState | undefined> {
-  let contents: string;
+  const theme = await readTheme(themeId);
 
   try {
-    const stats = await lstat(filePath);
-    if (!stats.isFile()) {
-      throw new StateError(`Current theme state is not a regular file: ${filePath}`, 'read');
-    }
-    contents = await readFile(filePath, 'utf8');
+    await writeCurrentTheme(client, theme);
   } catch (error) {
-    if (isFileNotFound(error)) return undefined;
-    if (error instanceof StateError) throw error;
-    throw new StateError(`Failed to read current theme state: ${filePath}`, 'read', {
-      cause: error,
-    });
-  }
-
-  let input: unknown;
-  try {
-    input = JSON.parse(contents);
-  } catch (error) {
-    throw new StateError(`Invalid JSON in current theme state: ${filePath}`, 'invalid', {
-      cause: error,
-    });
-  }
-
-  const result = currentStateSchema.safeParse(input);
-  if (!result.success) {
     throw new StateError(
-      `Invalid current theme state: ${filePath}: ${result.error.message}`,
-      'invalid',
+      `Failed to write current theme state: ${error instanceof Error ? error.message : String(error)}`,
+      'write',
+      { cause: error },
     );
   }
-  return result.data;
+}
+
+async function readStateKeys(
+  client: StateClient,
+  keys: string[],
+): Promise<Record<string, unknown>> {
+  try {
+    return await client.get(keys);
+  } catch (error) {
+    throw new StateError(
+      `Failed to read current theme state: ${error instanceof Error ? error.message : String(error)}`,
+      'read',
+      { cause: error },
+    );
+  }
+}
+
+async function writeCurrentTheme(client: StateClient, theme: Theme): Promise<void> {
+  await client.set(selectionKey, { id: theme.id });
+  await client.set(themeKey, theme);
 }
 
 function assertThemeInCatalog(themeId: string, manifest: CatalogManifest): void {
@@ -107,26 +94,26 @@ function assertThemeInCatalog(themeId: string, manifest: CatalogManifest): void 
   }
 }
 
-async function writeCurrentState(filePath: string, state: CurrentState): Promise<void> {
-  const directory = path.dirname(filePath);
-  const temporaryPath = path.join(directory, `.${path.basename(filePath)}.${randomUUID()}.tmp`);
-
+async function readCurrentSelection(client: StateClient): Promise<string | undefined> {
   try {
-    await mkdir(directory, { recursive: true, mode: 0o700 });
-    await writeFile(temporaryPath, `${JSON.stringify(state, null, 2)}\n`, {
-      flag: 'wx',
-      mode: 0o600,
-    });
-    await rename(temporaryPath, filePath);
-  } catch (error) {
-    throw new StateError(`Failed to write current theme state: ${filePath}`, 'write', {
-      cause: error,
-    });
-  } finally {
-    await rm(temporaryPath, { force: true }).catch(() => undefined);
+    const values = await client.get([selectionKey]);
+    const selection = values[selectionKey];
+    if (isSelection(selection)) return selection.id;
+  } catch {
+    // If the selection cannot be read, proceed as if it were missing.
   }
+  return undefined;
 }
 
-function isFileNotFound(error: unknown): boolean {
-  return Boolean(error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT');
+function isTheme(value: unknown): value is Theme {
+  return themeSchema.safeParse(value).success;
+}
+
+function isSelection(value: unknown): value is { id: string } {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'id' in value &&
+    typeof (value as { id: unknown }).id === 'string'
+  );
 }

@@ -4,8 +4,9 @@
 
 - This repo is an early-stage personal development-environment workspace, not a
   traditional app. Current real content is repo tooling, `forge.config.yaml`,
-  TypeScript automation under `scripts/`, and the first zsh and Starship config
-  sources under `configs/`, plus workspace packages under `packages/`.
+  TypeScript automation under `scripts/`, and the first zsh, Starship, and WezTerm
+  configuration packages under `packages/`, alongside workspace packages such as
+  Swatch.
 - The repository root owns environment orchestration, shared development
   tooling, and workspace-wide command aggregation. Each package owns its domain
   logic, runtime dependencies, tests, and build outputs.
@@ -17,28 +18,28 @@
   prepares missing external build inputs without refreshing valid existing
   input. Package-specific maintenance commands remain in that package and are invoked with
   `pnpm --filter <package> <command>`.
-- Packages own syncing of their runtime artifacts into community-standard user
-  directories. `forge.config.yaml#modules` explicitly registers enabled
-  configuration manifests. Domain-relative sources resolve from the manifest
-  directory; Forge aggregates and applies their installation plans.
-- Swatch's built catalog is the sole Theme data source. Its persistent state
-  `${XDG_STATE_HOME:-$HOME/.local/state}/swatch/current.json` stores only the
-  selected Theme ID. `current` and `current --json` initialize the catalog
-  default only when that state is missing; `current --path` never creates it,
-  and `use` writes only an explicitly validated selection. Invalid or dangling
-  state must fail and can only be repaired by an explicit valid selection.
-- Swatch integrations consume Theme data through the public `swatch current
---json` interface and use `current --path` only to register state watchers.
-  They must not duplicate catalog/state validation. Runtime discovery must start
-  from the current shell startup files, discard inherited shell-derived paths,
-  and never cache discovered paths across consumer configuration reloads.
+- Packages own syncing of their runtime artifacts and configuration sources into
+  community-standard user directories. `forge.config.yaml#modules` explicitly
+  registers enabled workspace packages. Forge aggregates each package's `sync`
+  plan and applies the combined installation plan.
+- Swatch's built catalog is the sole Theme data source. The selected theme is
+  stored in the Forge State Hub under `swatch.theme`; `swatch.selection` retains
+  only the Theme ID for recovery. `swatch current` and `swatch current --json`
+  initialize the catalog default only when theme state is missing; `use` writes
+  only an explicitly validated selection. Invalid or dangling state must fail and
+  can only be repaired by an explicit valid selection.
+- Swatch integrations consume Theme data through the Forge State Hub, for example
+  `forge-state get swatch.theme`. They must not duplicate catalog/state
+  validation. Runtime discovery must start from the current shell startup files,
+  discard inherited shell-derived paths, and never cache discovered paths across
+  consumer configuration reloads.
 - Workspace packages that produce CLIs are build-first: runtime commands use
   their complete `dist/` output and must not execute TypeScript sources
   directly.
 - `.github/workflows/code-checks.yml` runs the repository checks in CI.
 - `forge.config.yaml` owns repository-wide Homebrew requirements and the explicit
-  config module registry. Config manifests own generic `sync` entries; packages
-  do not expose Forge-specific manifests.
+  package registry. Workspace packages own their `sync` entries; configuration
+  packages are ordinary workspace packages.
 
 ## Scripts Layout
 
@@ -116,7 +117,8 @@
 - Husky `commit-msg` runs `pnpm exec commitlint --edit "$1"`.
 - Commit messages must use conventional types from `.commitlintrc.json` and a
   non-empty scope. Allowed scopes are `repo`, `nvim`, `wezterm`, `tmux`,
-  `clrs`, `swatch`, `scripts`, `shared`, and `global`.
+  `clrs`, `swatch`, `scripts`, `shared`, `global`, `state`, `starship`, and
+  `zsh`.
 - Pull request titles follow the same rules and are the source of squash commit
   titles. Pull requests must come from the personal repository owner, and GitHub
   audits every commit added to `main` after merging.
